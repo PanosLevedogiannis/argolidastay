@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Χρωματική ταυτότητα: γήινη παλέτα — ώχρα, τερακότα, ελιά.
+ *
+ * Ένα μόνο τονικό χρώμα (τερακότα) για κουμπιά και έμφαση· όλα τα υπόλοιπα
+ * είναι ουδέτερες αποχρώσεις άμμου. Οι φωτογραφίες των καταλυμάτων είναι
+ * ο πρωταγωνιστής, οπότε το περιβάλλον μένει ήσυχο.
+ *
+ * Το site δεν έχει σκούρο θέμα: οι φωτογραφίες ακινήτων δείχνουν άσχημα σε
+ * σκούρο φόντο, και το κοινό είναι τουρίστες σε κινητό μέσα στον ήλιο.
+ */
+@theme {
+  /* Βάση — άμμος και κάρβουνο */
+  --color-sand-50: #fbf9f5;
+  --color-sand-100: #f5f1e8;
+  --color-sand-200: #e9e2d3;
+  --color-sand-300: #d8cdb8;
+  --color-sand-400: #b9ab90;
+
+  --color-ink-900: #241f1a;
+  --color-ink-700: #4a423a;
+  --color-ink-500: #766c60;
+  --color-ink-300: #a89e91;
+
+  /* Τονικό — τερακότα */
+  --color-clay-50: #fdf4f1;
+  --color-clay-100: #f9e3dc;
+  --color-clay-500: #b5563a;
+  --color-clay-600: #9c4630;
+  --color-clay-700: #7d3625;
+
+  /* Δευτερεύοντα — ώχρα και ελιά, για ετικέτες και εικονίδια */
+  --color-ochre-100: #f7ecd5;
+  --color-ochre-500: #c8863c;
+  --color-olive-100: #eaecdf;
+  --color-olive-500: #6b7048;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Κλίμακα τυπογραφίας — σφιχτό line-height στους τίτλους */
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 700;
+
+  --text-h1: 2.25rem;
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.2;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h2--font-weight: 600;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(36 31 26 / 0.04), 0 8px 24px -12px rgb(36 31 26 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(36 31 26 / 0.05), 0 16px 32px -12px rgb(36 31 26 / 0.2);
+  --shadow-panel: 0 1px 3px rgb(36 31 26 / 0.06), 0 12px 40px -16px rgb(36 31 26 / 0.18);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-sand-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+  }
+
+  /* Ορατό περίγραμμα εστίασης παντού — το site πρέπει να δουλεύει και με πληκτρολόγιο. */
+  :focus-visible {
+    outline: 2px solid var(--color-clay-500);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /*
+   * Ήπια εμφάνιση καθώς κυλάει η σελίδα. Ενεργοποιείται από μικρό script
+   * με IntersectionObserver — χωρίς βιβλιοθήκη animation.
+   */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Όποιος έχει ζητήσει λιγότερη κίνηση, δεν βλέπει καθόλου. */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal-in {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
 }
