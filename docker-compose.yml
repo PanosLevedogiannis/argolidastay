@@ -1,0 +1,34 @@
+# Τοπική ανάπτυξη: μόνο η βάση σε container.
+#
+# Η εφαρμογή τρέχει κανονικά με `npm run dev` στο μηχάνημά σου, ώστε να
+# έχεις άμεση ανανέωση κατά τη συγγραφή κώδικα. Σε container μπαίνει μόνο
+# η Postgres, που δεν θέλει κανένα στήσιμο.
+#
+#   docker compose up -d      ξεκινά τη βάση
+#   docker compose down       τη σταματά
+#   docker compose down -v    τη σβήνει εντελώς μαζί με τα δεδομένα
+#
+# Για τον server παραγωγής δες το docker-compose.prod.yml.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: argolidastay-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: argolidastay
+      POSTGRES_PASSWORD: argolidastay
+      POSTGRES_DB: argolidastay
+    ports:
+      # Εκτίθεται μόνο στο localhost του μηχανήματός σου.
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U argolidastay -d argolidastay']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:

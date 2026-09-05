@@ -26,9 +26,12 @@
 
 ## Ξεκίνημα
 
+Χρειάζεται Docker για τη βάση (Docker Desktop σε Mac).
+
 ```bash
 npm install
 cp .env.example .env        # και συμπλήρωσε το PAYLOAD_SECRET
+docker compose up -d        # ξεκινά την Postgres
 npm run dev
 ```
 
@@ -91,19 +94,21 @@ SEED_PASSWORD="ο-κωδικός-σου" node scripts/seed.mjs
 
 ## Βάση δεδομένων
 
-Τοπικά χρησιμοποιείται SQLite: ένα αρχείο στον δίσκο, μηδέν εγκατάσταση. Το `argolidastay.db` δεν ανεβαίνει στο git.
-
-Για παραγωγή η βάση αλλάζει σε Postgres — αλλάζει μόνο ο adapter στο `payload.config.ts`:
+**Postgres και στα δύο περιβάλλοντα** — τοπικά σε container, στον server δίπλα στην εφαρμογή. Η ίδια βάση παντού σημαίνει ότι δεν ανακαλύπτουμε διαφορές συμπεριφοράς την ώρα του deploy.
 
 ```bash
-npm install @payloadcms/db-postgres
+docker compose up -d      # ξεκινά
+docker compose down       # σταματά
+docker compose down -v    # σβήνει και τα δεδομένα
 ```
 
-```ts
-import { postgresAdapter } from '@payloadcms/db-postgres'
+## Ανέβασμα στον server
 
-db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URI } })
-```
+Δες το **[DEPLOY.md](DEPLOY.md)** για τα αναλυτικά βήματα.
+
+Σύνοψη: VPS με Ubuntu, Docker, και `docker-compose.prod.yml` που σηκώνει τρία container — εφαρμογή, Postgres, και Caddy που κάνει μόνο του το HTTPS.
+
+Δύο πράγματα ζουν σε volume και επιβιώνουν κάθε ενημέρωσης: **η βάση** και **οι φωτογραφίες**. Αν οι φωτογραφίες έμεναν στον δίσκο του container, θα εξαφανίζονταν με το πρώτο deploy — είναι το συνηθέστερο λάθος σε τέτοια στησίματα.
 
 ## SMS προς τους ιδιοκτήτες
 

@@ -20,6 +20,12 @@ export const Media: CollectionConfig = {
     read: () => true,
   },
   upload: {
+    /**
+     * Ο φάκελος αποθήκευσης ορίζεται από μεταβλητή ώστε στον server να
+     * δείχνει σε volume που επιβιώνει των deploy. Αν χαθεί αυτό, χάνονται
+     * όλες οι φωτογραφίες με την πρώτη ενημέρωση.
+     */
+    staticDir: process.env.MEDIA_DIR || 'media',
     mimeTypes: ['image/*'],
     focalPoint: true,
     imageSizes: [

@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+media
+backups
+README.md
+DEPLOY.md
+docker-compose*.yml
+Dockerfile
+.DS_Store

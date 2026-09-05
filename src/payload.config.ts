@@ -2,7 +2,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { buildConfig } from 'payload'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
 
@@ -56,9 +56,16 @@ export default buildConfig({
 
   secret: process.env.PAYLOAD_SECRET || '',
 
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || 'file:./argolidastay.db',
+  /**
+   * Postgres και στην ανάπτυξη και στην παραγωγή.
+   *
+   * Τοπικά τρέχει σε container (docker compose up -d), στον server δίπλα
+   * στην εφαρμογή. Η ίδια βάση και στα δύο σημαίνει ότι δεν ανακαλύπτουμε
+   * διαφορές συμπεριφοράς την ώρα του deploy.
+   */
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI,
     },
   }),
 

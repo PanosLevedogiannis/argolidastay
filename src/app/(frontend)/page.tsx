@@ -7,6 +7,16 @@ import { PropertyCard } from '@/components/PropertyCard'
 import { SearchBar } from '@/components/SearchBar'
 import { ButtonLink, Container, Section, Stat } from '@/components/ui'
 
+/**
+ * Η σελίδα ξαναχτίζεται το πολύ κάθε λεπτό.
+ *
+ * Χωρίς αυτό το Next κρατά την πρώτη έκδοση για πάντα, και μια νέα
+ * καταχώρηση από το πάνελ δεν θα εμφανιζόταν ποτέ. Με ένα λεπτό, ο
+ * διαχειριστής βλέπει τη δουλειά του σχεδόν αμέσως και το site παραμένει
+ * γρήγορο για τους επισκέπτες.
+ */
+export const revalidate = 60
+
 export default async function HomePage() {
   const payload = await getPayload({ config })
 

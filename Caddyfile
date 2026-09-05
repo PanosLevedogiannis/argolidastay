@@ -1,0 +1,20 @@
+# Αντίστροφος διακομιστής. Το Caddy βγάζει μόνο του πιστοποιητικό HTTPS
+# από τη Let's Encrypt και το ανανεώνει — δεν χρειάζεται τίποτα άλλο.
+#
+# Άλλαξε το domain όταν αγοράσεις το argolidastay.gr. Μέχρι τότε μπορείς
+# να βάλεις τη διεύθυνση IP του server με :80 μπροστά, χωρίς HTTPS.
+
+argolidastay.gr, www.argolidastay.gr {
+	encode zstd gzip
+
+	reverse_proxy app:3000
+
+	# Βασικές κεφαλίδες ασφαλείας.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
