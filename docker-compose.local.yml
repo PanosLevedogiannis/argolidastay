@@ -1,0 +1,60 @@
+# Ολόκληρο το site με μία εντολή, χωρίς να εγκαταστήσεις Node ή Postgres.
+#
+#   docker compose -f docker-compose.local.yml up -d --build
+#
+# Μετά άνοιξε http://localhost:3000
+#
+# Χρήσιμο για όποιον θέλει απλώς να δουλέψει στο περιεχόμενο και δεν
+# ασχολείται με κώδικα: αρκεί το Docker Desktop και ο φάκελος του project.
+#
+# ΠΡΟΣΟΧΗ: η βάση είναι τοπική σε αυτό το μηχάνημα. Δύο άτομα που τρέχουν
+# αυτό ο καθένας στο laptop του θα έχουν ΞΕΧΩΡΙΣΤΑ δεδομένα. Για κοινή
+# δουλειά δείτε το DEPLOY.md.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: argolidastay
+      POSTGRES_PASSWORD: argolidastay
+      POSTGRES_DB: argolidastay
+    volumes:
+      - local_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U argolidastay -d argolidastay']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Προεπιλογή: η βάση του διπλανού container.
+      #
+      # Για ΚΟΙΝΗ βάση με δεύτερο άτομο, βάλε SHARED_DATABASE_URI στο .env
+      # και δείξε στην ίδια απομακρυσμένη Postgres — τότε βλέπετε και οι δύο
+      # τα ίδια καταλύματα. Σκόπιμα δεν διαβάζουμε το DATABASE_URI: εκείνο
+      # δείχνει στο 127.0.0.1 για το `npm run dev`, που μέσα στο container
+      # σημαίνει «ο εαυτός μου» και δεν θα δούλευε.
+      DATABASE_URI: ${SHARED_DATABASE_URI:-postgres://argolidastay:argolidastay@db:5432/argolidastay}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Λείπει το PAYLOAD_SECRET — δες το .env.example}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      MEDIA_DIR: /app/media
+      SMS_PROVIDER: ${SMS_PROVIDER:-none}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+      SMS_SENDER: ${SMS_SENDER:-ArgolidaStay}
+    volumes:
+      - local_media:/app/media
+    ports:
+      - '3000:3000'
+
+volumes:
+  local_db:
+  local_media:
