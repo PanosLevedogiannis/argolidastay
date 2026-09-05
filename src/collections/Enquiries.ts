@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { buildSmsText, sendSms } from '../lib/notifications'
+
 /**
  * Αιτήματα επικοινωνίας.
  *
@@ -19,10 +21,10 @@ export const Enquiries: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'visitorName',
-    defaultColumns: ['visitorName', 'visitorPhone', 'property', 'status', 'createdAt'],
+    defaultColumns: ['property', 'type', 'visitorName', 'visitorPhone', 'status', 'createdAt'],
     group: 'Κατάλογος',
     description:
-      'Όσοι ζήτησαν να τους καλέσει κάποιο κατάλυμα. Άλλαξε την κατάσταση καθώς τα διαχειρίζεσαι.',
+      'Κάθε εκδήλωση ενδιαφέροντος ανά κατάλυμα — είτε συμπληρωμένη φόρμα είτε απλή αποκάλυψη τηλεφώνου.',
   },
   access: {
     // Οποιοσδήποτε επισκέπτης μπορεί να υποβάλει αίτημα από τη φόρμα...
@@ -31,6 +33,66 @@ export const Enquiries: CollectionConfig = {
     read: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => user?.role === 'admin',
+  },
+  hooks: {
+    /**
+     * Μόλις καταχωρηθεί αίτημα κλήσης, ειδοποιείται ο ιδιοκτήτης.
+     *
+     * Τρέχει μετά την αποθήκευση και ποτέ δεν ρίχνει σφάλμα προς τα έξω:
+     * αν πέσει ο πάροχος SMS, το αίτημα έχει ήδη σωθεί και φαίνεται στο
+     * πάνελ — προτιμότερο από το να δει ο επισκέπτης σφάλμα και να φύγει.
+     */
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation !== 'create' || doc.type !== 'callback') return doc
+
+        try {
+          const property = await req.payload.findByID({
+            collection: 'properties',
+            id: typeof doc.property === 'object' ? doc.property.id : doc.property,
+            depth: 0,
+            overrideAccess: true,
+          })
+
+          if (!property?.contactPhone) {
+            await req.payload.update({
+              collection: 'enquiries',
+              id: doc.id,
+              data: { notificationLog: 'Δεν στάλθηκε: το κατάλυμα δεν έχει κινητό.' },
+              overrideAccess: true,
+            })
+            return doc
+          }
+
+          const text = buildSmsText({
+            ownerPhone: property.contactPhone,
+            propertyName: String(property.name ?? ''),
+            visitorName: doc.visitorName,
+            visitorPhone: doc.visitorPhone,
+            checkIn: doc.checkIn,
+            checkOut: doc.checkOut,
+            guests: doc.guests,
+          })
+
+          const result = await sendSms(property.contactPhone, text)
+          const stamp = new Date().toLocaleString('el-GR')
+
+          await req.payload.update({
+            collection: 'enquiries',
+            id: doc.id,
+            data: {
+              notificationLog: `${stamp} — ${result.provider}: ${result.detail}`,
+              ...(result.ok ? { status: 'notified' } : {}),
+            },
+            overrideAccess: true,
+          })
+        } catch (err) {
+          req.payload.logger.error(`Αποτυχία ειδοποίησης για αίτημα ${doc.id}: ${err}`)
+        }
+
+        return doc
+      },
+    ],
   },
   fields: [
     {
@@ -42,16 +104,38 @@ export const Enquiries: CollectionConfig = {
       label: 'Κατάλυμα',
     },
     {
+      name: 'type',
+      type: 'select',
+      required: true,
+      defaultValue: 'callback',
+      index: true,
+      label: 'Είδος',
+      options: [
+        { value: 'callback', label: 'Ζήτησε να τον καλέσουν' },
+        { value: 'phone_reveal', label: 'Είδε το τηλέφωνο' },
+      ],
+      admin: {
+        description:
+          'Η «αποκάλυψη τηλεφώνου» καταγράφεται αυτόματα όταν κάποιος πατήσει «Δες τηλέφωνο». Δεν έχει στοιχεία επικοινωνίας — μετράει μόνο ως ενδιαφέρον.',
+      },
+    },
+    {
       name: 'visitorName',
       type: 'text',
-      required: true,
       label: 'Όνομα επισκέπτη',
+      validate: (value: unknown, { siblingData }: { siblingData?: { type?: string } }) => {
+        if (siblingData?.type === 'callback' && !value) return 'Απαιτείται για αίτημα κλήσης.'
+        return true
+      },
     },
     {
       name: 'visitorPhone',
       type: 'text',
-      required: true,
       label: 'Τηλέφωνο επισκέπτη',
+      validate: (value: unknown, { siblingData }: { siblingData?: { type?: string } }) => {
+        if (siblingData?.type === 'callback' && !value) return 'Απαιτείται για αίτημα κλήσης.'
+        return true
+      },
     },
     {
       name: 'visitorEmail',
