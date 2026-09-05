@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Payload
+/media
+*.db
+*.db-journal
+src/payload-types.ts
+
+# Το example πρέπει να ανεβαίνει — δείχνει ποιες μεταβλητές χρειάζονται.
+!.env.example

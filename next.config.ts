@@ -1,7 +1,12 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+import { withPayload } from '@payloadcms/next/withPayload'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    // Οι φωτογραφίες σερβίρονται τοπικά από το Payload κατά την ανάπτυξη.
+    // Όταν μπει CDN (S3 / Cloudflare / Vercel Blob), πρόσθεσε εδώ το domain.
+    remotePatterns: [],
+  },
+}
 
-export default nextConfig;
+export default withPayload(nextConfig, { devBundleServerPackages: false })

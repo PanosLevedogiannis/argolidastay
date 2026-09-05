@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ArgolidaStay
 
-## Getting Started
+Κατάλογος καταλυμάτων στην Αργολίδα — Ναύπλιο, Τολό, Επίδαυρος, Πόρτο Χέλι, Ερμιόνη.
 
-First, run the development server:
+Ο κατάλογος φιλοξενεί καταλύματα τρίτων. Ο επισκέπτης βρίσκει το κατάλυμα και επικοινωνεί **απευθείας με τον ιδιοκτήτη** — το site δεν μεσολαβεί σε κρατήσεις ή πληρωμές.
+
+## Τεχνολογίες
+
+| | |
+|---|---|
+| Framework | Next.js 16 (App Router) + React 19 + TypeScript |
+| CMS / πάνελ | Payload 3 — τρέχει μέσα στο ίδιο Next.js project |
+| Βάση | SQLite τοπικά · Postgres στην παραγωγή |
+| Styling | Tailwind CSS 4 |
+| Εικόνες | Sharp — τα μεγέθη παράγονται αυτόματα στο ανέβασμα |
+
+Το Payload δεν είναι ξεχωριστός server: ζει στο route group `src/app/(payload)` και μοιράζεται τη βάση με το frontend. Ένα project, ένα deploy.
+
+## Ξεκίνημα
 
 ```bash
+npm install
+cp .env.example .env        # και συμπλήρωσε το PAYLOAD_SECRET
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Δημιουργία μυστικού κλειδιού:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Site: http://localhost:3000
+- Πάνελ διαχείρισης: http://localhost:3000/admin
 
-## Learn More
+Την πρώτη φορά το `/admin` ζητά να φτιάξεις τον πρώτο λογαριασμό.
 
-To learn more about Next.js, take a look at the following resources:
+## Δομή
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/
+│   ├── (frontend)/          # Το δημόσιο site
+│   └── (payload)/           # Πάνελ + REST/GraphQL API (παράγεται από το Payload)
+├── collections/             # Το μοντέλο δεδομένων — εδώ γίνονται οι αλλαγές
+│   ├── Properties.ts        # Καταλύματα
+│   ├── Areas.ts             # Περιοχές
+│   ├── Amenities.ts         # Παροχές
+│   ├── Media.ts             # Φωτογραφίες
+│   └── Users.ts             # Λογαριασμοί πάνελ
+├── payload.config.ts        # Κεντρικές ρυθμίσεις, γλώσσες, βάση
+└── payload-types.ts         # Παράγεται αυτόματα — μην το πειράζεις
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Μοντέλο δεδομένων
 
-## Deploy on Vercel
+**Καταλύματα** — τύπος, περιοχή, περιγραφές, χωρητικότητα, παροχές, φωτογραφίες, συντεταγμένες, ενδεικτική τιμή, στοιχεία επικοινωνίας ιδιοκτήτη, σύνδεσμοι προς Booking/Airbnb.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Περιοχές** και **Παροχές** είναι ξεχωριστά collections και όχι ελεύθερο κείμενο μέσα στο κατάλυμα. Έτσι το «Ναύπλιο» γράφεται μία φορά, κάθε περιοχή μπορεί να αποκτήσει δική της σελίδα προορισμού για SEO, και τα φίλτρα αναζήτησης δουλεύουν πάνω σε σταθερή λίστα.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Τα καταλύματα έχουν **πρόχειρα (drafts)** με αυτόματη αποθήκευση: μια καταχώρηση δουλεύεται με την ησυχία της και εμφανίζεται στο site μόνο μετά τη δημοσίευση.
+
+## Διγλωσσία
+
+Ρυθμισμένη σε επίπεδο πεδίου. Όποιο πεδίο είναι `localized: true` αποθηκεύεται χωριστά στα ελληνικά και στα αγγλικά, και ο διαχειριστής αλλάζει γλώσσα από επιλογέα μέσα στη φόρμα.
+
+Προεπιλογή τα ελληνικά. Αν λείπει αγγλική μετάφραση, σερβίρεται το ελληνικό κείμενο αντί για κενό.
+
+> Το ίδιο το πάνελ (κουμπιά «Save», «Create New») παραμένει στα αγγλικά — το Payload δεν διαθέτει ελληνική μετάφραση διεπαφής. Όλες οι ετικέτες των πεδίων, που είναι και το μέρος που διαβάζει ο διαχειριστής, είναι στα ελληνικά.
+
+## Βάση δεδομένων
+
+Τοπικά χρησιμοποιείται SQLite: ένα αρχείο στον δίσκο, μηδέν εγκατάσταση. Το `argolidastay.db` δεν ανεβαίνει στο git.
+
+Για παραγωγή η βάση αλλάζει σε Postgres — αλλάζει μόνο ο adapter στο `payload.config.ts`:
+
+```bash
+npm install @payloadcms/db-postgres
+```
+
+```ts
+import { postgresAdapter } from '@payloadcms/db-postgres'
+
+db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URI } })
+```
+
+## Εντολές
+
+| | |
+|---|---|
+| `npm run dev` | Τοπικός server |
+| `npm run build` | Build παραγωγής |
+| `npm run generate:types` | Ξαναφτιάχνει το `payload-types.ts` μετά από αλλαγή σε collection |
+| `npm run lint` | ESLint |
+
+Μετά από κάθε αλλαγή σε `src/collections/` τρέξε `npm run generate:types`, ώστε το TypeScript να ξέρει τα νέα πεδία.
+
+## Τι εκκρεμεί
+
+- [ ] Σχεδίαση — η αρχική σελίδα είναι προσωρινή, δείχνει απλώς ότι διαβάζονται τα δεδομένα
+- [ ] Σελίδα καταλύματος και σελίδα περιοχής
+- [ ] Αναζήτηση και φίλτρα (περιοχή, τύπος, άτομα, παροχές)
+- [ ] Χάρτης
+- [ ] Φόρμα επικοινωνίας
+- [ ] SEO — sitemap, structured data, μεταδεδομένα ανά σελίδα
+- [ ] Αποθήκευση εικόνων σε CDN αντί για τοπικό δίσκο
+- [ ] Μετάβαση σε Postgres και deploy
