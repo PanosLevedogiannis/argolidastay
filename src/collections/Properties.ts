@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
+/** Ορατό μόνο στο προσωπικό — δεν βγαίνει ποτέ στο δημόσιο API. */
+const staffOnly = { read: ({ req: { user } }: { req: { user?: unknown } }) => Boolean(user) }
+
 /**
  * Τα καταλύματα του καταλόγου.
  *
@@ -23,7 +26,21 @@ export const Properties: CollectionConfig = {
     description: 'Τα καταλύματα που εμφανίζονται στον κατάλογο. Χρησιμοποίησε "Αποθήκευση ως πρόχειρο" όσο δουλεύεις μια καταχώρηση και "Δημοσίευση" όταν είναι έτοιμη.',
   },
   access: {
-    read: () => true,
+    /**
+     * Το προσωπικό βλέπει τα πάντα. Το κοινό βλέπει μόνο όσα έχουν ενεργή
+     * συνδρομή: όταν περάσει η ημερομηνία, το κατάλυμα εξαφανίζεται από το
+     * site χωρίς να χρειαστεί να θυμηθεί κανείς να το αποδημοσιεύσει.
+     * Όσα δεν έχουν καθόλου ημερομηνία θεωρούνται ενεργά (π.χ. δωρεάν).
+     */
+    read: ({ req: { user } }) => {
+      if (user) return true
+      return {
+        or: [
+          { subscriptionUntil: { exists: false } },
+          { subscriptionUntil: { greater_than: new Date().toISOString() } },
+        ],
+      }
+    },
   },
   versions: {
     drafts: {
@@ -236,22 +253,52 @@ export const Properties: CollectionConfig = {
           ],
         },
 
-        // ── Τιμές & κρατήσεις ────────────────────────────────────
+        // ── Τιμές ────────────────────────────────────────────────
         {
-          label: 'Τιμές & κρατήσεις',
+          label: 'Τιμές',
           fields: [
             {
-              name: 'priceFrom',
-              type: 'number',
-              min: 0,
-              label: 'Τιμή από (€ / διανυκτέρευση)',
+              type: 'row',
+              fields: [
+                {
+                  name: 'priceFrom',
+                  type: 'number',
+                  min: 0,
+                  label: 'Τιμή από (€)',
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'priceTo',
+                  type: 'number',
+                  min: 0,
+                  label: 'Τιμή έως (€)',
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              name: 'priceNote',
+              type: 'text',
+              localized: true,
+              label: 'Σημείωση για την τιμή',
               admin: {
-                description: 'Ενδεικτική χαμηλότερη τιμή. Άφησέ το κενό αν δεν θέλεις να εμφανίζεται τιμή.',
+                description:
+                  'Π.χ. «ανά διανυκτέρευση, ανάλογα με την περίοδο». Αν αφήσεις τις τιμές κενές, το site γράφει «Επικοινωνήστε για τιμές».',
               },
             },
+          ],
+        },
+
+        // ── Επικοινωνία ──────────────────────────────────────────
+        {
+          label: 'Επικοινωνία',
+          description:
+            'Εδώ φτάνουν τα αιτήματα των επισκεπτών. Το τηλέφωνο είναι το κρίσιμο πεδίο — χωρίς αυτό δεν μπορεί να σταλεί ειδοποίηση.',
+          fields: [
             {
               name: 'contactName',
               type: 'text',
+              required: true,
               label: 'Όνομα ιδιοκτήτη',
             },
             {
@@ -259,39 +306,78 @@ export const Properties: CollectionConfig = {
               fields: [
                 {
                   name: 'contactPhone',
+                  access: staffOnly,
                   type: 'text',
-                  label: 'Τηλέφωνο',
-                  admin: { width: '50%' },
+                  required: true,
+                  label: 'Κινητό ιδιοκτήτη',
+                  admin: {
+                    width: '50%',
+                    description: 'Με κωδικό χώρας, π.χ. +306941234567 — έτσι φεύγει το SMS.',
+                  },
                 },
                 {
                   name: 'contactEmail',
+                  access: staffOnly,
                   type: 'email',
-                  label: 'Email',
+                  label: 'Email ιδιοκτήτη',
                   admin: { width: '50%' },
                 },
               ],
+            },
+            {
+              name: 'contactViber',
+              access: staffOnly,
+              type: 'text',
+              label: 'Viber (αν διαφέρει από το κινητό)',
             },
             {
               name: 'bookingLinks',
               type: 'array',
               label: 'Σύνδεσμοι κράτησης',
               admin: {
-                description: 'Π.χ. η σελίδα του καταλύματος στο Booking.com ή στο Airbnb.',
+                description: 'Προαιρετικό. Π.χ. η σελίδα του καταλύματος στο Booking.com ή στο Airbnb.',
               },
               fields: [
-                {
-                  name: 'platform',
-                  type: 'text',
-                  required: true,
-                  label: 'Πλατφόρμα',
-                },
-                {
-                  name: 'url',
-                  type: 'text',
-                  required: true,
-                  label: 'Σύνδεσμος',
-                },
+                { name: 'platform', type: 'text', required: true, label: 'Πλατφόρμα' },
+                { name: 'url', type: 'text', required: true, label: 'Σύνδεσμος' },
               ],
+            },
+          ],
+        },
+
+        // ── Συνδρομή & νομικά ────────────────────────────────────
+        {
+          label: 'Συνδρομή & νομικά',
+          description: 'Εσωτερικά στοιχεία. Το ΜΗΤΕ εμφανίζεται στο site· τα υπόλοιπα όχι.',
+          fields: [
+            {
+              name: 'mite',
+              type: 'text',
+              label: 'Αριθμός ΜΗΤΕ',
+              admin: {
+                description:
+                  'Τα τουριστικά καταλύματα υποχρεούνται να αναγράφουν τον αριθμό μητρώου τους στις καταχωρήσεις. Εμφανίζεται στη σελίδα του καταλύματος.',
+              },
+            },
+            {
+              name: 'subscriptionUntil',
+              access: staffOnly,
+              type: 'date',
+              label: 'Συνδρομή έως',
+              admin: {
+                date: { pickerAppearance: 'dayOnly', displayFormat: 'dd/MM/yyyy' },
+                description:
+                  'Μετά την ημερομηνία αυτή το κατάλυμα κρύβεται αυτόματα από το site, ακόμα κι αν είναι δημοσιευμένο.',
+              },
+            },
+            {
+              name: 'internalNotes',
+              access: staffOnly,
+              type: 'textarea',
+              label: 'Εσωτερικές σημειώσεις',
+              admin: {
+                description: 'Δεν εμφανίζονται πουθενά στο site. Μόνο για εσένα.',
+              },
             },
           ],
         },

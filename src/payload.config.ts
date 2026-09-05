@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import { Areas } from './collections/Areas'
 import { Amenities } from './collections/Amenities'
 import { Properties } from './collections/Properties'
+import { Enquiries } from './collections/Enquiries'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,7 +25,7 @@ export default buildConfig({
     },
   },
 
-  collections: [Properties, Areas, Amenities, Media, Users],
+  collections: [Properties, Enquiries, Areas, Amenities, Media, Users],
 
   editor: lexicalEditor(),
 
