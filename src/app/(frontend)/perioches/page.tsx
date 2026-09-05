@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 import { Container } from '@/components/ui'
+import { href, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,9 +17,10 @@ export const metadata: Metadata = {
 }
 
 export default async function AreasPage() {
+  const locale = await getLocale()
   const payload = await getPayload({ config })
 
-  const areas = await payload.find({ collection: 'areas', limit: 100, sort: 'name', depth: 1 })
+  const areas = await payload.find({ collection: 'areas', limit: 100, sort: 'name', depth: 1, locale })
 
   // Πόσα καταλύματα έχει η καθεμιά — ο επισκέπτης θέλει να ξέρει αν αξίζει
   // να μπει πριν κάνει το κλικ.
@@ -34,9 +37,9 @@ export default async function AreasPage() {
 
   return (
     <Container className="py-10">
-      <h1 className="text-h1 text-balance">Περιοχές της Αργολίδας</h1>
+      <h1 className="text-h1 text-balance">{t(locale, 'areas.title')}</h1>
       <p className="mt-2 max-w-2xl text-ink-500 text-pretty">
-        Από το Ναύπλιο και την Επίδαυρο μέχρι το Πόρτο Χέλι — διάλεξε πού θέλεις να μείνεις.
+        {t(locale, 'areas.subtitle')}
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -48,7 +51,7 @@ export default async function AreasPage() {
           return (
             <Link
               key={area.id}
-              href={`/perioches/${area.slug}`}
+              href={href(locale, `/perioches/${area.slug}`)}
               className="group overflow-hidden rounded-card bg-white shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lift"
             >
               <div className="relative aspect-[16/10] bg-sand-200">
@@ -65,7 +68,9 @@ export default async function AreasPage() {
               <div className="p-4">
                 <h2 className="font-semibold group-hover:text-clay-600">{area.name}</h2>
                 <p className="mt-0.5 text-sm text-ink-500">
-                  {n === 0 ? 'Χωρίς καταχωρήσεις ακόμα' : `${n} ${n === 1 ? 'κατάλυμα' : 'καταλύματα'}`}
+                  {n === 0
+                    ? t(locale, 'areas.empty')
+                    : `${n} ${t(locale, n === 1 ? 'list.one' : 'list.many')}`}
                 </p>
                 {area.description && (
                   <p className="mt-2 line-clamp-2 text-sm text-ink-500">{area.description}</p>

@@ -3,13 +3,14 @@
 import { useState } from 'react'
 
 import { Button } from './ui'
+import { DEFAULT_LOCALE, t, type Locale } from '@/lib/i18n'
 
 type Revealed = { phone: string; viber: string; name: string | null }
 
-function priceLabel(from?: number | null, to?: number | null) {
+function priceLabel(locale: Locale, from?: number | null, to?: number | null) {
   if (from && to && from !== to) return `${from}–${to}€`
-  if (from) return `από ${from}€`
-  if (to) return `έως ${to}€`
+  if (from) return locale === 'en' ? `from ${from}€` : `από ${from}€`
+  if (to) return locale === 'en' ? `up to ${to}€` : `έως ${to}€`
   return null
 }
 
@@ -28,11 +29,13 @@ export function ContactBox({
   priceFrom,
   priceTo,
   priceNote,
+  locale = DEFAULT_LOCALE,
 }: {
   propertyId: number | string
   priceFrom?: number | null
   priceTo?: number | null
   priceNote?: string | null
+  locale?: Locale
 }) {
   const [revealed, setRevealed] = useState<Revealed | null>(null)
   const [revealing, setRevealing] = useState(false)
@@ -49,7 +52,7 @@ export function ContactBox({
       if (!res.ok) throw new Error()
       setRevealed(await res.json())
     } catch {
-      setError('Κάτι πήγε στραβά. Δοκίμασε ξανά ή στείλε αίτημα να σε καλέσουν.')
+      setError(t(locale, 'contact.error'))
     } finally {
       setRevealing(false)
     }
@@ -74,19 +77,19 @@ export function ContactBox({
           checkOut: data.get('checkOut') || undefined,
           guests: data.get('guests') ? Number(data.get('guests')) : undefined,
           message: data.get('message') || undefined,
-          locale: 'el',
+          locale,
         }),
       })
       if (!res.ok) throw new Error()
       setSent(true)
     } catch {
-      setError('Δεν στάλθηκε το αίτημα. Δοκίμασε το τηλέφωνο παραπάνω.')
+      setError(t(locale, 'contact.error'))
     } finally {
       setSending(false)
     }
   }
 
-  const price = priceLabel(priceFrom, priceTo)
+  const price = priceLabel(locale, priceFrom, priceTo)
   const field =
     'h-11 w-full rounded-xl border-0 bg-sand-50 px-3.5 text-[15px] ' +
     'ring-1 ring-inset ring-sand-200 focus:ring-2 focus:ring-clay-500'
@@ -98,11 +101,11 @@ export function ContactBox({
           <>
             <div className="text-2xl font-semibold">{price}</div>
             <div className="mt-0.5 text-sm text-ink-500">
-              {priceNote || 'ενδεικτικά, ανά διανυκτέρευση'}
+              {priceNote || t(locale, 'contact.priceNote')}
             </div>
           </>
         ) : (
-          <div className="text-lg font-semibold">Επικοινωνήστε για τιμές</div>
+          <div className="text-lg font-semibold">{t(locale, 'contact.askPrice')}</div>
         )}
       </div>
 
@@ -110,7 +113,9 @@ export function ContactBox({
         {revealed ? (
           <div className="rounded-xl bg-olive-100 p-4 text-center">
             <div className="text-xs text-ink-500">
-              {revealed.name ? `Επικοινωνία — ${revealed.name}` : 'Τηλέφωνο επικοινωνίας'}
+              {revealed.name
+                ? `${t(locale, 'contact.phoneOf')} — ${revealed.name}`
+                : t(locale, 'contact.phone')}
             </div>
             <a
               href={`tel:${revealed.phone.replace(/\s/g, '')}`}
@@ -122,18 +127,18 @@ export function ContactBox({
               href={`viber://chat?number=${encodeURIComponent(revealed.viber.replace(/\s/g, ''))}`}
               className="mt-2 inline-block text-sm text-clay-600 underline underline-offset-4"
             >
-              Μήνυμα στο Viber
+              {t(locale, 'contact.viber')}
             </a>
           </div>
         ) : (
           <Button onClick={reveal} disabled={revealing} className="w-full" size="lg">
-            {revealing ? 'Φόρτωση…' : 'Δες τηλέφωνο'}
+            {revealing ? t(locale, 'contact.loading') : t(locale, 'contact.showPhone')}
           </Button>
         )}
 
         {!sent && (
           <>
-            <div className="my-3 text-center text-xs text-ink-300">ή</div>
+            <div className="my-3 text-center text-xs text-ink-300">{t(locale, 'contact.or')}</div>
 
             {!showForm ? (
               <Button
@@ -141,40 +146,40 @@ export function ContactBox({
                 className="w-full"
                 onClick={() => setShowForm(true)}
               >
-                Να με καλέσουν
+                {t(locale, 'contact.callMe')}
               </Button>
             ) : (
               <form onSubmit={submit} className="space-y-2.5">
-                <input name="name" required placeholder="Το όνομά σου" className={field} />
+                <input name="name" required placeholder={t(locale, 'contact.yourName')} className={field} />
                 <input
                   name="phone"
                   required
                   type="tel"
-                  placeholder="Το τηλέφωνό σου"
+                  placeholder={t(locale, 'contact.yourPhone')}
                   className={field}
                 />
                 <div className="grid grid-cols-2 gap-2.5">
-                  <input name="checkIn" type="date" aria-label="Άφιξη" className={field} />
-                  <input name="checkOut" type="date" aria-label="Αναχώρηση" className={field} />
+                  <input name="checkIn" type="date" aria-label={t(locale, 'contact.checkIn')} className={field} />
+                  <input name="checkOut" type="date" aria-label={t(locale, 'contact.checkOut')} className={field} />
                 </div>
                 <input
                   name="guests"
                   type="number"
                   min={1}
-                  placeholder="Άτομα"
+                  placeholder={t(locale, 'search.guests')}
                   className={field}
                 />
                 <textarea
                   name="message"
                   rows={2}
-                  placeholder="Μήνυμα (προαιρετικό)"
+                  placeholder={t(locale, 'contact.message')}
                   className="w-full rounded-xl border-0 bg-sand-50 p-3.5 text-[15px] ring-1 ring-inset ring-sand-200 focus:ring-2 focus:ring-clay-500"
                 />
                 <Button type="submit" disabled={sending} className="w-full">
-                  {sending ? 'Αποστολή…' : 'Στείλε το αίτημα'}
+                  {sending ? t(locale, 'contact.sending') : t(locale, 'contact.send')}
                 </Button>
                 <p className="text-center text-xs text-ink-300">
-                  Το τηλέφωνό σου πάει μόνο στον ιδιοκτήτη αυτού του καταλύματος.
+                  {t(locale, 'contact.privacy')}
                 </p>
               </form>
             )}
@@ -183,9 +188,9 @@ export function ContactBox({
 
         {sent && (
           <div className="rounded-xl bg-olive-100 p-4 text-center">
-            <div className="font-medium">Το αίτημα στάλθηκε</div>
+            <div className="font-medium">{t(locale, 'contact.sentTitle')}</div>
             <p className="mt-1 text-sm text-ink-500">
-              Ο ιδιοκτήτης ειδοποιήθηκε και θα σε καλέσει.
+              {t(locale, 'contact.sentBody')}
             </p>
           </div>
         )}

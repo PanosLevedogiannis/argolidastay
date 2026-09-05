@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 import { Container } from '@/components/ui'
+import { href, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,26 +17,28 @@ export const metadata: Metadata = {
 }
 
 export default async function ArticlesPage() {
+  const locale = await getLocale()
   const payload = await getPayload({ config })
 
   const articles = await payload.find({
     collection: 'articles',
     where: { _status: { equals: 'published' } },
     depth: 1,
+    locale,
     limit: 24,
     sort: '-publishedAt',
   })
 
   return (
     <Container className="py-10">
-      <h1 className="text-h1 text-balance">Οδηγοί για την Αργολίδα</h1>
+      <h1 className="text-h1 text-balance">{t(locale, 'guides.title')}</h1>
       <p className="mt-2 max-w-2xl text-ink-500 text-pretty">
-        Τι να δεις, πού να κολυμπήσεις και πώς να κινηθείς.
+        {t(locale, 'guides.subtitle')}
       </p>
 
       {articles.docs.length === 0 ? (
         <p className="mt-10 rounded-card bg-white p-10 text-center text-ink-500 shadow-card">
-          Δεν έχουν δημοσιευτεί οδηγοί ακόμα.
+          {t(locale, 'guides.empty')}
         </p>
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -46,7 +50,7 @@ export default async function ArticlesPage() {
             return (
               <Link
                 key={a.id}
-                href={`/odigoi/${a.slug}`}
+                href={href(locale, `/odigoi/${a.slug}`)}
                 className="group overflow-hidden rounded-card bg-white shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lift"
               >
                 <div className="relative aspect-[16/10] bg-sand-200">

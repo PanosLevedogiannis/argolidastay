@@ -6,36 +6,29 @@ import config from '@payload-config'
 import { PropertyCard } from '@/components/PropertyCard'
 import { SearchBar } from '@/components/SearchBar'
 import { ButtonLink, Container, Section, Stat } from '@/components/ui'
+import { href, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 
-/**
- * Η σελίδα παράγεται σε κάθε αίτημα, όχι κατά το χτίσιμο.
- *
- * Δύο λόγοι. Πρώτον, τα καταλύματα αλλάζουν από το πάνελ και πρέπει να
- * φαίνονται αμέσως — με προϋπολογισμό θα έμεναν παγωμένα. Δεύτερον, το
- * χτίσιμο της εικόνας Docker γίνεται χωρίς βάση δεδομένων: αν η σελίδα
- * προσπαθούσε να διαβάσει καταλύματα εκείνη τη στιγμή, το build θα
- * αποτύγχανε.
- *
- * Το κόστος είναι ένα ερώτημα στη βάση ανά επίσκεψη, που για Postgres
- * στο ίδιο μηχάνημα είναι αμελητέο.
- */
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
+  const locale = await getLocale()
   const payload = await getPayload({ config })
 
   const [areas, featured, latest] = await Promise.all([
-    payload.find({ collection: 'areas', limit: 20, sort: 'name', depth: 1 }),
+    payload.find({ collection: 'areas', limit: 20, sort: 'name', depth: 1, locale }),
     payload.find({
       collection: 'properties',
       limit: 6,
       depth: 1,
+      locale,
       where: { and: [{ _status: { equals: 'published' } }, { featured: { equals: true } }] },
     }),
     payload.find({
       collection: 'properties',
       limit: 6,
       depth: 1,
+      locale,
       sort: '-createdAt',
       where: { _status: { equals: 'published' } },
     }),
@@ -55,24 +48,23 @@ export default async function HomePage() {
 
         <Container className="py-14 sm:py-24">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-clay-600">Αργολίδα</p>
+            <p className="text-sm font-medium text-clay-600">{t(locale, 'home.eyebrow')}</p>
             <h1 className="mt-3 text-h1 text-balance sm:text-display">
-              Βρες πού θα μείνεις, μίλα κατευθείαν με τον ιδιοκτήτη
+              {t(locale, 'home.title')}
             </h1>
             <p className="mt-4 max-w-xl text-lg text-ink-700 text-pretty">
-              Δωμάτια, διαμερίσματα και βίλες σε Ναύπλιο, Τολό, Επίδαυρο και όλη την Αργολίδα.
-              Χωρίς μεσάζοντες, χωρίς προμήθειες.
+              {t(locale, 'home.subtitle')}
             </p>
           </div>
 
           <div className="mt-8 max-w-4xl">
-            <SearchBar areas={areaOptions} />
+            <SearchBar areas={areaOptions} locale={locale} />
           </div>
 
           <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-6">
-            <Stat value={`${latest.totalDocs}`} label="καταλύματα" />
-            <Stat value={`${areas.totalDocs}`} label="περιοχές" />
-            <Stat value="0%" label="προμήθεια" />
+            <Stat value={`${latest.totalDocs}`} label={t(locale, 'home.stat.properties')} />
+            <Stat value={`${areas.totalDocs}`} label={t(locale, 'home.stat.areas')} />
+            <Stat value="0%" label={t(locale, 'home.stat.commission')} />
           </dl>
         </Container>
       </section>
@@ -80,17 +72,17 @@ export default async function HomePage() {
       {/* ── Καταλύματα ────────────────────────────────────────── */}
       {showcase.length > 0 && (
         <Section
-          title={featured.docs.length > 0 ? 'Προτεινόμενα καταλύματα' : 'Πρόσφατες καταχωρήσεις'}
-          subtitle="Διαλεγμένα από όλη την Αργολίδα."
+          title={t(locale, featured.docs.length > 0 ? 'home.featured' : 'home.recent')}
+          subtitle={t(locale, 'home.featuredSub')}
           action={
-            <ButtonLink href="/katalymata" variant="secondary" size="sm">
-              Δες όλα
+            <ButtonLink href={href(locale, '/katalymata')} variant="secondary" size="sm">
+              {t(locale, 'home.seeAll')}
             </ButtonLink>
           }
         >
           <div className="reveal grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {showcase.map((p) => (
-              <PropertyCard key={p.id} property={p} />
+              <PropertyCard key={p.id} property={p} locale={locale} />
             ))}
           </div>
         </Section>
@@ -100,8 +92,8 @@ export default async function HomePage() {
       {featuredAreas.length > 0 && (
         <Section
           className="bg-white"
-          title="Πού θέλεις να μείνεις;"
-          subtitle="Κάθε γωνιά της Αργολίδας έχει τον δικό της χαρακτήρα."
+          title={t(locale, 'home.areasTitle')}
+          subtitle={t(locale, 'home.areasSub')}
         >
           <div className="reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featuredAreas.map((area) => {
@@ -110,7 +102,7 @@ export default async function HomePage() {
               return (
                 <Link
                   key={area.id}
-                  href={`/perioches/${area.slug}`}
+                  href={href(locale, `/perioches/${area.slug}`)}
                   className="group relative aspect-[3/4] overflow-hidden rounded-card bg-sand-200 shadow-card transition-shadow hover:shadow-lift"
                 >
                   {src && (
@@ -134,31 +126,15 @@ export default async function HomePage() {
       )}
 
       {/* ── Πώς δουλεύει ──────────────────────────────────────── */}
-      <Section title="Πώς δουλεύει" className="bg-sand-100">
+      <Section title={t(locale, 'home.howTitle')} className="bg-sand-100">
         <ol className="reveal grid gap-6 sm:grid-cols-3">
-          {[
-            {
-              n: '1',
-              t: 'Ψάξε',
-              d: 'Φιλτράρισε με περιοχή, άτομα και τύπο καταλύματος μέχρι να βρεις κάτι που σου ταιριάζει.',
-            },
-            {
-              n: '2',
-              t: 'Επικοινώνησε',
-              d: 'Δες το τηλέφωνο του ιδιοκτήτη ή άφησε το δικό σου για να σε καλέσει εκείνος.',
-            },
-            {
-              n: '3',
-              t: 'Κλείσε απευθείας',
-              d: 'Συμφωνείτε τιμή και ημερομηνίες μεταξύ σας. Το site δεν παίρνει προμήθεια.',
-            },
-          ].map((step) => (
-            <li key={step.n} className="rounded-card bg-white p-6 shadow-card">
+          {[1, 2, 3].map((n) => (
+            <li key={n} className="rounded-card bg-white p-6 shadow-card">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-clay-100 font-semibold text-clay-700">
-                {step.n}
+                {n}
               </span>
-              <h3 className="mt-4 text-lg font-semibold">{step.t}</h3>
-              <p className="mt-1.5 text-sm text-ink-500">{step.d}</p>
+              <h3 className="mt-4 text-lg font-semibold">{t(locale, `home.how${n}`)}</h3>
+              <p className="mt-1.5 text-sm text-ink-500">{t(locale, `home.how${n}d`)}</p>
             </li>
           ))}
         </ol>
@@ -168,14 +144,13 @@ export default async function HomePage() {
       <Section className="bg-white">
         <div className="reveal overflow-hidden rounded-card bg-ink-900 px-6 py-12 text-center sm:px-12 sm:py-16">
           <h2 className="text-h2 text-balance text-white sm:text-h1">
-            Έχεις κατάλυμα στην Αργολίδα;
+            {t(locale, 'home.ownerCta')}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-pretty text-sand-300">
-            Καταχώρησέ το και δέξου τηλεφωνήματα απευθείας από τους επισκέπτες. Χωρίς
-            προμήθεια ανά κράτηση.
+            {t(locale, 'home.ownerCtaSub')}
           </p>
-          <ButtonLink href="/kataxorisi" size="lg" className="mt-7">
-            Καταχώρησε το κατάλυμά σου
+          <ButtonLink href={href(locale, '/kataxorisi')} size="lg" className="mt-7">
+            {t(locale, 'nav.listYours')}
           </ButtonLink>
         </div>
       </Section>

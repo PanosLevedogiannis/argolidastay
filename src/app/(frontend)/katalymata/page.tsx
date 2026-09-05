@@ -7,6 +7,8 @@ import config from '@payload-config'
 import { FilterBar } from '@/components/FilterBar'
 import { PropertyCard } from '@/components/PropertyCard'
 import { ButtonLink, Container } from '@/components/ui'
+import { href, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +33,7 @@ function many(v: string | string[] | undefined): string[] {
 
 export default async function PropertiesPage({ searchParams }: { searchParams: Params }) {
   const sp = await searchParams
+  const locale = await getLocale()
   const payload = await getPayload({ config })
 
   const areaSlug = one(sp.area)
@@ -40,8 +43,8 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
   const page = Number(one(sp.page) ?? 1) || 1
 
   const [areas, amenities] = await Promise.all([
-    payload.find({ collection: 'areas', limit: 100, sort: 'name' }),
-    payload.find({ collection: 'amenities', limit: 100, sort: 'name' }),
+    payload.find({ collection: 'areas', limit: 100, sort: 'name', locale }),
+    payload.find({ collection: 'amenities', limit: 100, sort: 'name', locale }),
   ])
 
   // Τα φίλτρα ταξιδεύουν στη διεύθυνση ως ονόματα, όχι ως αριθμοί, ώστε ο
@@ -64,6 +67,7 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
     collection: 'properties',
     where: { and: conditions },
     depth: 1,
+    locale,
     limit: PER_PAGE,
     page,
     sort: ['-featured', '-createdAt'],
@@ -84,62 +88,61 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
     if (type) p.set('type', type)
     amenitySlugs.forEach((a) => p.append('amenity', a))
     if (n > 1) p.set('page', String(n))
-    return `/katalymata${p.size ? `?${p}` : ''}`
+    return href(locale, `/katalymata${p.size ? `?${p}` : ''}`)
   }
 
   return (
     <Container className="py-10">
       <h1 className="text-h1 text-balance">
-        {activeArea ? `Καταλύματα — ${activeArea.name}` : 'Καταλύματα στην Αργολίδα'}
+        {activeArea ? `${t(locale, 'nav.properties')} — ${activeArea.name}` : t(locale, 'list.title')}
       </h1>
       <p className="mt-2 text-ink-500">
         {results.totalDocs === 0
-          ? 'Κανένα αποτέλεσμα'
-          : `${results.totalDocs} ${results.totalDocs === 1 ? 'κατάλυμα' : 'καταλύματα'}`}
+          ? t(locale, 'list.none')
+          : `${results.totalDocs} ${t(locale, results.totalDocs === 1 ? 'list.one' : 'list.many')}`}
       </p>
 
       <div className="mt-6">
-        <FilterBar areas={areaOptions} amenities={amenityOptions} />
+        <FilterBar areas={areaOptions} amenities={amenityOptions} locale={locale} />
       </div>
 
       {results.docs.length === 0 ? (
         <div className="mt-10 rounded-card bg-white p-10 text-center shadow-card">
-          <p className="text-lg font-medium">Δεν βρέθηκε κατάλυμα με αυτά τα κριτήρια</p>
+          <p className="text-lg font-medium">{t(locale, 'list.emptyTitle')}</p>
           <p className="mx-auto mt-2 max-w-md text-ink-500">
-            Δοκίμασε λιγότερα φίλτρα — για παράδειγμα χωρίς συγκεκριμένη περιοχή ή με
-            μικρότερο αριθμό ατόμων.
+            {t(locale, 'list.emptyBody')}
           </p>
-          <ButtonLink href="/katalymata" variant="secondary" className="mt-6">
-            Δες όλα τα καταλύματα
+          <ButtonLink href={href(locale, '/katalymata')} variant="secondary" className="mt-6">
+            {t(locale, 'list.seeAll')}
           </ButtonLink>
         </div>
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {results.docs.map((p) => (
-            <PropertyCard key={p.id} property={p} />
+            <PropertyCard key={p.id} property={p} locale={locale} />
           ))}
         </div>
       )}
 
       {results.totalPages > 1 && (
-        <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Σελίδες">
+        <nav className="mt-10 flex items-center justify-center gap-2" aria-label={t(locale, 'list.pageOf', { a: page, b: results.totalPages })}>
           {results.hasPrevPage && (
             <Link
               href={pageHref(page - 1)}
               className="rounded-full bg-white px-4 py-2 text-sm ring-1 ring-sand-300 hover:bg-sand-100"
             >
-              Προηγούμενη
+              {t(locale, 'list.prev')}
             </Link>
           )}
           <span className="px-3 text-sm text-ink-500">
-            Σελίδα {page} από {results.totalPages}
+            {t(locale, 'list.pageOf', { a: page, b: results.totalPages })}
           </span>
           {results.hasNextPage && (
             <Link
               href={pageHref(page + 1)}
               className="rounded-full bg-white px-4 py-2 text-sm ring-1 ring-sand-300 hover:bg-sand-100"
             >
-              Επόμενη
+              {t(locale, 'list.next')}
             </Link>
           )}
         </nav>

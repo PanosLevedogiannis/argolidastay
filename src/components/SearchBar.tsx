@@ -4,20 +4,9 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button } from './ui'
+import { DEFAULT_LOCALE, href, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
 
 type AreaOption = { id: number | string; name: string; slug: string }
-
-const TYPES = [
-  { value: '', label: 'Κάθε τύπος' },
-  { value: 'apartment', label: 'Διαμέρισμα' },
-  { value: 'studio', label: 'Στούντιο' },
-  { value: 'maisonette', label: 'Μεζονέτα' },
-  { value: 'villa', label: 'Βίλα' },
-  { value: 'house', label: 'Μονοκατοικία' },
-  { value: 'room', label: 'Δωμάτιο' },
-  { value: 'hotel', label: 'Ξενοδοχείο' },
-  { value: 'guesthouse', label: 'Ξενώνας' },
-]
 
 /**
  * Μπάρα αναζήτησης.
@@ -29,10 +18,12 @@ const TYPES = [
  */
 export function SearchBar({
   areas,
+  locale = DEFAULT_LOCALE,
   compact = false,
   defaults,
 }: {
   areas: AreaOption[]
+  locale?: Locale
   compact?: boolean
   defaults?: { area?: string; guests?: string; type?: string }
 }) {
@@ -47,7 +38,7 @@ export function SearchBar({
     if (area) params.set('area', area)
     if (guests) params.set('guests', guests)
     if (type) params.set('type', type)
-    router.push(`/katalymata${params.size ? `?${params}` : ''}`)
+    router.push(href(locale, `/katalymata${params.size ? `?${params}` : ''}`))
   }
 
   const field =
@@ -65,14 +56,14 @@ export function SearchBar({
     >
       <div className="grid w-full gap-3 sm:grid-cols-[1.4fr_1fr_1.2fr_auto] sm:items-end">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-ink-500">Περιοχή</span>
+          <span className="mb-1.5 block text-xs font-medium text-ink-500">{t(locale, 'search.area')}</span>
           <select
             className={field}
             value={area}
             onChange={(e) => setArea(e.target.value)}
-            aria-label="Περιοχή"
+            aria-label={t(locale, 'search.area')}
           >
-            <option value="">Όλη η Αργολίδα</option>
+            <option value="">{t(locale, 'search.allAreas')}</option>
             {areas.map((a) => (
               <option key={a.id} value={a.slug}>
                 {a.name}
@@ -82,14 +73,14 @@ export function SearchBar({
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-ink-500">Άτομα</span>
+          <span className="mb-1.5 block text-xs font-medium text-ink-500">{t(locale, 'search.guests')}</span>
           <select
             className={field}
             value={guests}
             onChange={(e) => setGuests(e.target.value)}
-            aria-label="Αριθμός ατόμων"
+            aria-label={t(locale, 'search.guests')}
           >
-            <option value="">Οποιαδήποτε</option>
+            <option value="">{t(locale, 'search.anyGuests')}</option>
             {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
               <option key={n} value={n}>
                 {n}+
@@ -99,23 +90,24 @@ export function SearchBar({
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-ink-500">Τύπος</span>
+          <span className="mb-1.5 block text-xs font-medium text-ink-500">{t(locale, 'search.type')}</span>
           <select
             className={field}
             value={type}
             onChange={(e) => setType(e.target.value)}
-            aria-label="Τύπος καταλύματος"
+            aria-label={t(locale, 'search.type')}
           >
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            <option value="">{t(locale, 'search.anyType')}</option>
+            {Object.entries(PROPERTY_TYPES[locale]).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
               </option>
             ))}
           </select>
         </label>
 
         <Button type="submit" size="lg" className="h-12 w-full sm:w-auto">
-          Αναζήτηση
+          {t(locale, 'search.submit')}
         </Button>
       </div>
     </form>

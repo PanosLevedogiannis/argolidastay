@@ -4,19 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button } from './ui'
+import { DEFAULT_LOCALE, href, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
 
 type Option = { value: string; label: string }
-
-const TYPES: Option[] = [
-  { value: 'apartment', label: 'Διαμέρισμα' },
-  { value: 'studio', label: 'Στούντιο' },
-  { value: 'maisonette', label: 'Μεζονέτα' },
-  { value: 'villa', label: 'Βίλα' },
-  { value: 'house', label: 'Μονοκατοικία' },
-  { value: 'room', label: 'Δωμάτιο' },
-  { value: 'hotel', label: 'Ξενοδοχείο' },
-  { value: 'guesthouse', label: 'Ξενώνας' },
-]
 
 /**
  * Φίλτρα αναζήτησης.
@@ -29,9 +19,11 @@ const TYPES: Option[] = [
 export function FilterBar({
   areas,
   amenities,
+  locale = DEFAULT_LOCALE,
 }: {
   areas: Option[]
   amenities: Option[]
+  locale?: Locale
 }) {
   const router = useRouter()
   const params = useSearchParams()
@@ -57,7 +49,7 @@ export function FilterBar({
     if (merged.guests) p.set('guests', merged.guests)
     if (merged.type) p.set('type', merged.type)
     merged.amenities.forEach((a) => p.append('amenity', a))
-    router.push(`/katalymata${p.size ? `?${p}` : ''}`, { scroll: false })
+    router.push(href(locale, `/katalymata${p.size ? `?${p}` : ''}`), { scroll: false })
   }
 
   function toggleAmenity(value: string) {
@@ -78,9 +70,9 @@ export function FilterBar({
           className={select}
           value={current.area}
           onChange={(e) => apply({ area: e.target.value })}
-          aria-label="Περιοχή"
+          aria-label={t(locale, 'search.area')}
         >
-          <option value="">Όλη η Αργολίδα</option>
+          <option value="">{t(locale, 'search.allAreas')}</option>
           {areas.map((a) => (
             <option key={a.value} value={a.value}>
               {a.label}
@@ -92,12 +84,12 @@ export function FilterBar({
           className={select}
           value={current.guests}
           onChange={(e) => apply({ guests: e.target.value })}
-          aria-label="Άτομα"
+          aria-label={t(locale, 'search.guests')}
         >
-          <option value="">Οποιαδήποτε άτομα</option>
+          <option value="">{t(locale, 'search.anyGuests')}</option>
           {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
             <option key={n} value={n}>
-              {n}+ άτομα
+              {n}+ {t(locale, 'search.guests')}
             </option>
           ))}
         </select>
@@ -106,12 +98,12 @@ export function FilterBar({
           className={select}
           value={current.type}
           onChange={(e) => apply({ type: e.target.value })}
-          aria-label="Τύπος"
+          aria-label={t(locale, 'search.type')}
         >
-          <option value="">Κάθε τύπος</option>
-          {TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
+          <option value="">{t(locale, 'search.anyType')}</option>
+          {Object.entries(PROPERTY_TYPES[locale]).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
             </option>
           ))}
         </select>
@@ -122,7 +114,7 @@ export function FilterBar({
           className="h-11 rounded-xl bg-white px-4 text-[15px] ring-1 ring-inset ring-sand-200 hover:bg-sand-50"
           aria-expanded={open}
         >
-          Παροχές
+          {t(locale, 'search.amenities')}
           {current.amenities.length > 0 && (
             <span className="ml-2 rounded-full bg-clay-500 px-1.5 py-0.5 text-xs text-white">
               {current.amenities.length}
@@ -131,8 +123,8 @@ export function FilterBar({
         </button>
 
         {activeCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => router.push('/katalymata')}>
-            Καθαρισμός ({activeCount})
+          <Button variant="ghost" size="sm" onClick={() => router.push(href(locale, '/katalymata'))}>
+            {t(locale, 'search.clear')} ({activeCount})
           </Button>
         )}
       </div>

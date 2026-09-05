@@ -2,17 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import type { Property } from '@/payload-types'
-
-const TYPE_LABELS: Record<string, string> = {
-  apartment: 'Διαμέρισμα',
-  studio: 'Στούντιο',
-  maisonette: 'Μεζονέτα',
-  villa: 'Βίλα',
-  house: 'Μονοκατοικία',
-  room: 'Δωμάτιο',
-  hotel: 'Ξενοδοχείο',
-  guesthouse: 'Ξενώνας',
-}
+import { DEFAULT_LOCALE, href, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
 
 /**
  * Μορφοποίηση τιμής.
@@ -21,21 +11,27 @@ const TYPE_LABELS: Record<string, string> = {
  * μπορεί να λείπει εντελώς. Όταν λείπει, γράφουμε κάτι που καλεί σε
  * επικοινωνία αντί για κενό — ένα κενό μοιάζει με σφάλμα.
  */
-function priceLabel(from?: number | null, to?: number | null): string {
+function priceLabel(locale: Locale, from?: number | null, to?: number | null): string {
   if (from && to && from !== to) return `${from}–${to}€`
-  if (from) return `από ${from}€`
-  if (to) return `έως ${to}€`
-  return 'Ρωτήστε τιμή'
+  if (from) return locale === 'en' ? `from ${from}€` : `από ${from}€`
+  if (to) return locale === 'en' ? `up to ${to}€` : `έως ${to}€`
+  return t(locale, 'contact.askPrice')
 }
 
-export function PropertyCard({ property }: { property: Property }) {
+export function PropertyCard({
+  property,
+  locale = DEFAULT_LOCALE,
+}: {
+  property: Property
+  locale?: Locale
+}) {
   const cover = typeof property.coverImage === 'object' ? property.coverImage : null
   const area = typeof property.area === 'object' ? property.area : null
   const src = cover?.sizes?.card?.url || cover?.url
 
   return (
     <Link
-      href={`/katalymata/${property.slug}`}
+      href={href(locale, `/katalymata/${property.slug}`)}
       className="group block overflow-hidden rounded-card bg-white shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-sand-200">
@@ -51,14 +47,14 @@ export function PropertyCard({ property }: { property: Property }) {
 
         {property.featured && (
           <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-clay-700 shadow-sm backdrop-blur">
-            Προτεινόμενο
+            {locale === 'en' ? 'Featured' : 'Προτεινόμενο'}
           </span>
         )}
       </div>
 
       <div className="p-4">
         <div className="flex items-center gap-2 text-xs text-ink-500">
-          <span>{TYPE_LABELS[property.type] ?? property.type}</span>
+          <span>{PROPERTY_TYPES[locale][property.type] ?? property.type}</span>
           {area?.name && (
             <>
               <span aria-hidden="true">·</span>
@@ -77,10 +73,10 @@ export function PropertyCard({ property }: { property: Property }) {
 
         <div className="mt-3 flex items-baseline justify-between border-t border-sand-200 pt-3">
           <span className="font-semibold text-ink-900">
-            {priceLabel(property.priceFrom, property.priceTo)}
+            {priceLabel(locale, property.priceFrom, property.priceTo)}
           </span>
           <span className="text-sm text-ink-500">
-            {property.guests} {property.guests === 1 ? 'άτομο' : 'άτομα'}
+            {property.guests} {t(locale, property.guests === 1 ? 'prop.guest' : 'prop.guests')}
           </span>
         </div>
       </div>

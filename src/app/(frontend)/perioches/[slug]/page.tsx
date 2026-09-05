@@ -7,6 +7,8 @@ import config from '@payload-config'
 
 import { PropertyCard } from '@/components/PropertyCard'
 import { ButtonLink, Container } from '@/components/ui'
+import { href as localeHref, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 import type { Area } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -51,6 +53,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const area = await getArea(slug)
   if (!area) notFound()
 
+  const locale = await getLocale()
   const payload = await getPayload({ config })
 
   const [properties, articles] = await Promise.all([
@@ -58,6 +61,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       collection: 'properties',
       where: { and: [{ area: { equals: area.id } }, { _status: { equals: 'published' } }] },
       depth: 1,
+      locale,
       limit: 12,
       sort: ['-featured', '-createdAt'],
     }),
@@ -65,6 +69,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       collection: 'articles',
       where: { and: [{ area: { equals: area.id } }, { _status: { equals: 'published' } }] },
       depth: 1,
+      locale,
       limit: 3,
     }),
   ])
@@ -90,8 +95,8 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
       <Container className="py-10">
         <nav className="mb-3 text-sm text-ink-500">
-          <Link href="/perioches" className="hover:text-ink-900">
-            Περιοχές
+          <Link href={localeHref(locale, '/perioches')} className="hover:text-ink-900">
+            {t(locale, 'nav.areas')}
           </Link>
         </nav>
 
@@ -103,24 +108,28 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
         <p className="mt-4 text-ink-500">
           {properties.totalDocs === 0
-            ? 'Δεν υπάρχουν καταχωρήσεις ακόμα σε αυτή την περιοχή.'
-            : `${properties.totalDocs} ${
-                properties.totalDocs === 1 ? 'κατάλυμα' : 'καταλύματα'
-              }`}
+            ? t(locale, 'areas.noneHere')
+            : `${properties.totalDocs} ${t(
+                locale,
+                properties.totalDocs === 1 ? 'list.one' : 'list.many',
+              )}`}
         </p>
 
         {properties.docs.length > 0 && (
           <>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {properties.docs.map((p) => (
-                <PropertyCard key={p.id} property={p} />
+                <PropertyCard key={p.id} property={p} locale={locale} />
               ))}
             </div>
 
             {properties.totalDocs > properties.docs.length && (
               <div className="mt-8 text-center">
-                <ButtonLink href={`/katalymata?area=${area.slug}`} variant="secondary">
-                  Δες και τα {properties.totalDocs}
+                <ButtonLink
+                  href={localeHref(locale, `/katalymata?area=${area.slug}`)}
+                  variant="secondary"
+                >
+                  {t(locale, 'areas.seeAllIn', { n: properties.totalDocs })}
                 </ButtonLink>
               </div>
             )}
@@ -129,12 +138,12 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
         {articles.docs.length > 0 && (
           <section className="mt-16">
-            <h2 className="text-h2">Οδηγοί για {area.name}</h2>
+            <h2 className="text-h2">{t(locale, 'areas.guidesFor', { name: String(area.name) })}</h2>
             <ul className="mt-4 space-y-3">
               {articles.docs.map((a) => (
                 <li key={a.id}>
                   <Link
-                    href={`/odigoi/${a.slug}`}
+                    href={localeHref(locale, `/odigoi/${a.slug}`)}
                     className="block rounded-card bg-white p-4 shadow-card transition-shadow hover:shadow-lift"
                   >
                     <div className="font-medium">{a.title}</div>

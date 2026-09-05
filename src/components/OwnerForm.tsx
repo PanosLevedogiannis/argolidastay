@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { Button } from './ui'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n'
 
 /**
  * Φόρμα ιδιοκτήτη.
@@ -12,7 +13,8 @@ import { Button } from './ui'
  * θα διώξει τους μισούς — και ο στόχος εδώ δεν είναι πλήρης καταχώρηση,
  * είναι να πιάσουμε την επαφή.
  */
-export function OwnerForm() {
+export function OwnerForm({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
+  const en = locale === 'en'
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export function OwnerForm() {
       if (!res.ok) throw new Error()
       setSent(true)
     } catch {
-      setError('Δεν στάλθηκε. Δοκίμασε ξανά ή πάρε μας τηλέφωνο.')
+      setError(en ? 'Could not send. Please try again.' : 'Δεν στάλθηκε. Δοκίμασε ξανά ή πάρε μας τηλέφωνο.')
     } finally {
       setSending(false)
     }
@@ -49,10 +51,11 @@ export function OwnerForm() {
   if (sent) {
     return (
       <div className="rounded-card bg-olive-100 p-8 text-center">
-        <div className="text-lg font-semibold">Το λάβαμε</div>
+        <div className="text-lg font-semibold">{en ? 'Got it' : 'Το λάβαμε'}</div>
         <p className="mt-2 text-ink-700">
-          Θα σε πάρουμε τηλέφωνο τις επόμενες μέρες για τις φωτογραφίες και τις λεπτομέρειες
-          του καταλύματος.
+          {en
+            ? 'We will call you in the next few days about photos and the details of your property.'
+            : 'Θα σε πάρουμε τηλέφωνο τις επόμενες μέρες για τις φωτογραφίες και τις λεπτομέρειες του καταλύματος.'}
         </p>
       </div>
     )
@@ -66,35 +69,35 @@ export function OwnerForm() {
     <form onSubmit={submit} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Ονοματεπώνυμο *</span>
+          <span className="mb-1.5 block text-sm font-medium">{en ? 'Full name *' : 'Ονοματεπώνυμο *'}</span>
           <input name="ownerName" required className={field} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Τηλέφωνο *</span>
+          <span className="mb-1.5 block text-sm font-medium">{en ? 'Phone *' : 'Τηλέφωνο *'}</span>
           <input name="phone" required type="tel" className={field} />
         </label>
       </div>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">Email</span>
+        <span className="mb-1.5 block text-sm font-medium">{en ? 'Email' : 'Email'}</span>
         <input name="email" type="email" className={field} />
       </label>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Ονομασία καταλύματος</span>
+          <span className="mb-1.5 block text-sm font-medium">{en ? 'Property name' : 'Ονομασία καταλύματος'}</span>
           <input name="propertyName" className={field} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Περιοχή</span>
+          <span className="mb-1.5 block text-sm font-medium">{en ? 'Area' : 'Περιοχή'}</span>
           <input name="areaName" placeholder="π.χ. Τολό" className={field} />
         </label>
       </div>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">Τύπος</span>
+        <span className="mb-1.5 block text-sm font-medium">{en ? 'Type' : 'Τύπος'}</span>
         <select name="propertyType" className={field} defaultValue="">
-          <option value="">Διάλεξε…</option>
+          <option value="">{en ? 'Choose…' : 'Διάλεξε…'}</option>
           {[
             'Διαμέρισμα',
             'Στούντιο',
@@ -113,7 +116,7 @@ export function OwnerForm() {
       </label>
 
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">Μήνυμα</span>
+        <span className="mb-1.5 block text-sm font-medium">{en ? 'Message' : 'Μήνυμα'}</span>
         <textarea
           name="message"
           rows={3}
@@ -122,14 +125,15 @@ export function OwnerForm() {
       </label>
 
       <Button type="submit" size="lg" disabled={sending} className="w-full sm:w-auto">
-        {sending ? 'Αποστολή…' : 'Στείλε τα στοιχεία'}
+        {sending ? (en ? 'Sending…' : 'Αποστολή…') : en ? 'Send details' : 'Στείλε τα στοιχεία'}
       </Button>
 
       {error && <p className="text-sm text-clay-600">{error}</p>}
 
       <p className="text-xs text-ink-300">
-        Τα στοιχεία σου χρησιμοποιούνται μόνο για να επικοινωνήσουμε μαζί σου σχετικά με την
-        καταχώρηση.
+        {en
+          ? 'Your details are used only to contact you about your listing.'
+          : 'Τα στοιχεία σου χρησιμοποιούνται μόνο για να επικοινωνήσουμε μαζί σου σχετικά με την καταχώρηση.'}
       </p>
     </form>
   )

@@ -9,26 +9,18 @@ import { ContactBox } from '@/components/ContactBox'
 import { Container } from '@/components/ui'
 import { RichText } from '@/components/RichText'
 import type { Amenity, Media, Property } from '@/payload-types'
+import { href as localeHref, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
-const TYPE_LABELS: Record<string, string> = {
-  apartment: 'Διαμέρισμα',
-  studio: 'Στούντιο',
-  maisonette: 'Μεζονέτα',
-  villa: 'Βίλα',
-  house: 'Μονοκατοικία',
-  room: 'Δωμάτιο',
-  hotel: 'Ξενοδοχείο',
-  guesthouse: 'Ξενώνας',
-}
-
-async function getProperty(slug: string): Promise<Property | null> {
+async function getProperty(slug: string, locale?: Locale): Promise<Property | null> {
   const payload = await getPayload({ config })
   const res = await payload.find({
     collection: 'properties',
     where: { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
     depth: 2,
+    locale,
     limit: 1,
   })
   return res.docs[0] ?? null
@@ -58,13 +50,13 @@ export async function generateMetadata({
 }
 
 /** Απλή στατιστική γραμμή — άτομα, δωμάτια, μπάνια. */
-function Facts({ property }: { property: Property }) {
+function Facts({ property, locale }: { property: Property; locale: Locale }) {
   const items = [
-    { label: property.guests === 1 ? 'άτομο' : 'άτομα', value: property.guests },
-    { label: property.bedrooms === 1 ? 'υπνοδωμάτιο' : 'υπνοδωμάτια', value: property.bedrooms },
-    { label: property.beds === 1 ? 'κρεβάτι' : 'κρεβάτια', value: property.beds },
-    { label: property.bathrooms === 1 ? 'μπάνιο' : 'μπάνια', value: property.bathrooms },
-    { label: 'τ.μ.', value: property.sizeSqm },
+    { label: t(locale, property.guests === 1 ? 'prop.guest' : 'prop.guests'), value: property.guests },
+    { label: t(locale, property.bedrooms === 1 ? 'prop.bedroom' : 'prop.bedrooms'), value: property.bedrooms },
+    { label: t(locale, property.beds === 1 ? 'prop.bed' : 'prop.beds'), value: property.beds },
+    { label: t(locale, property.bathrooms === 1 ? 'prop.bathroom' : 'prop.bathrooms'), value: property.bathrooms },
+    { label: t(locale, 'prop.sqm'), value: property.sizeSqm },
   ].filter((i) => typeof i.value === 'number' && i.value > 0)
 
   return (
@@ -83,7 +75,8 @@ function Facts({ property }: { property: Property }) {
 
 export default async function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const property = await getProperty(slug)
+  const locale = await getLocale()
+  const property = await getProperty(slug, locale)
   if (!property) notFound()
 
   const area = typeof property.area === 'object' ? property.area : null
@@ -102,13 +95,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       {/* ── Γκαλερί ───────────────────────────────────────────── */}
       <Container className="pt-6">
         <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">
-          <Link href="/katalymata" className="hover:text-ink-900">
-            Καταλύματα
+          <Link href={localeHref(locale, '/katalymata')} className="hover:text-ink-900">
+            {t(locale, 'nav.properties')}
           </Link>
           {area && (
             <>
               <span aria-hidden="true">/</span>
-              <Link href={`/perioches/${area.slug}`} className="hover:text-ink-900">
+              <Link href={localeHref(locale, `/perioches/${area.slug}`)} className="hover:text-ink-900">
                 {area.name}
               </Link>
             </>
@@ -151,8 +144,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           <div>
             <div className="text-sm text-ink-500">
-              {TYPE_LABELS[property.type] ?? property.type}
-              {area && ` στην περιοχή ${area.name}`}
+              {PROPERTY_TYPES[locale][property.type] ?? property.type}
+              {area && ` ${t(locale, 'prop.inArea')} ${area.name}`}
             </div>
             <h1 className="mt-1 text-h1 text-balance">{property.name}</h1>
 
@@ -161,19 +154,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             )}
 
             <div className="mt-6 border-y border-sand-200 py-5">
-              <Facts property={property} />
+              <Facts property={property} locale={locale} />
             </div>
 
             {property.description && (
               <div className="mt-8">
-                <h2 className="text-h2">Περιγραφή</h2>
+                <h2 className="text-h2">{t(locale, 'prop.description')}</h2>
                 <RichText content={property.description} className="mt-3" />
               </div>
             )}
 
             {amenities.length > 0 && (
               <div className="mt-10">
-                <h2 className="text-h2">Παροχές</h2>
+                <h2 className="text-h2">{t(locale, 'prop.amenities')}</h2>
                 <ul className="mt-4 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
                   {amenities.map((a) => (
                     <li key={a.id} className="flex items-center gap-2.5 text-ink-700">
@@ -189,11 +182,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             )}
 
             <div className="mt-10">
-              <h2 className="text-h2">Τοποθεσία</h2>
+              <h2 className="text-h2">{t(locale, 'prop.location')}</h2>
               {property.address && <p className="mt-2 text-ink-700">{property.address}</p>}
               {typeof property.distanceToBeach === 'number' && (
                 <p className="mt-1 text-sm text-ink-500">
-                  {property.distanceToBeach} μέτρα από τη θάλασσα
+                  {property.distanceToBeach} {t(locale, 'prop.toBeach')}
                 </p>
               )}
 
@@ -216,14 +209,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-ink-500">
-                  Ο ακριβής χάρτης δεν έχει καταχωρηθεί. Ρώτησε τον ιδιοκτήτη για την ακριβή
-                  τοποθεσία.
+                  {t(locale, 'prop.noMap')}
                 </p>
               )}
             </div>
 
             {property.mite && (
-              <p className="mt-10 text-xs text-ink-300">Αρ. ΜΗΤΕ: {property.mite}</p>
+              <p className="mt-10 text-xs text-ink-300">{t(locale, 'prop.mite')}: {property.mite}</p>
             )}
           </div>
 
@@ -231,6 +223,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
               επικοινωνία να είναι πάντα ένα κλικ μακριά. */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <ContactBox
+              locale={locale}
               propertyId={property.id}
               priceFrom={property.priceFrom}
               priceTo={property.priceTo}

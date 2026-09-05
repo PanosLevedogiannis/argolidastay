@@ -8,6 +8,8 @@ import config from '@payload-config'
 import { PropertyCard } from '@/components/PropertyCard'
 import { RichText } from '@/components/RichText'
 import { Container } from '@/components/ui'
+import { href as localeHref, t } from '@/lib/i18n'
+import { getLocale } from '@/lib/server-locale'
 import type { Article, Property } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -50,6 +52,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug)
   if (!article) notFound()
 
+  const locale = await getLocale()
   const cover = typeof article.coverImage === 'object' ? article.coverImage : null
   const area = typeof article.area === 'object' ? article.area : null
   const related = (article.relatedProperties ?? []).filter(
@@ -74,13 +77,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <Container className="py-10">
         <div className="mx-auto max-w-2xl">
           <nav className="mb-3 flex flex-wrap gap-1.5 text-sm text-ink-500">
-            <Link href="/odigoi" className="hover:text-ink-900">
-              Οδηγοί
+            <Link href={localeHref(locale, '/odigoi')} className="hover:text-ink-900">
+              {t(locale, 'nav.guides')}
             </Link>
             {area && (
               <>
                 <span aria-hidden="true">/</span>
-                <Link href={`/perioches/${area.slug}`} className="hover:text-ink-900">
+                <Link href={localeHref(locale, `/perioches/${area.slug}`)} className="hover:text-ink-900">
                   {area.name}
                 </Link>
               </>
@@ -98,11 +101,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         {related.length > 0 && (
           <section className="mt-16 border-t border-sand-200 pt-10">
-            <h2 className="text-h2">Καταλύματα στην περιοχή</h2>
-            <p className="mt-1 text-ink-500">Από «τι να δεις» σε «πού θα μείνεις».</p>
+            <h2 className="text-h2">{t(locale, 'guides.related')}</h2>
+            <p className="mt-1 text-ink-500">{t(locale, 'guides.relatedSub')}</p>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((p) => (
-                <PropertyCard key={p.id} property={p} />
+                <PropertyCard key={p.id} property={p} locale={locale} />
               ))}
             </div>
           </section>
