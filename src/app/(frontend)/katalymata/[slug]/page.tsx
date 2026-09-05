@@ -11,6 +11,7 @@ import { RichText } from '@/components/RichText'
 import type { Amenity, Media, Property } from '@/payload-types'
 import { href as localeHref, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { JsonLd, pageAlternates, propertyJsonLd } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,7 @@ export async function generateMetadata({
   return {
     title: `${property.name}${area ? ` — ${area.name}` : ''}`,
     description: property.shortDescription ?? undefined,
+    alternates: pageAlternates(`/katalymata/${slug}`, locale),
     openGraph: {
       title: String(property.name),
       description: property.shortDescription ?? undefined,
@@ -95,6 +97,24 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
+      {/* Λέει στο Google ότι η σελίδα περιγράφει κατάλυμα, με τιμή και
+          τοποθεσία — προϋπόθεση για πλούσιο αποτέλεσμα αναζήτησης. */}
+      <JsonLd
+        data={propertyJsonLd({
+          name: String(property.name),
+          description: property.shortDescription,
+          slug: property.slug,
+          locale,
+          image: cover?.url,
+          areaName: area ? String(area.name) : null,
+          address: property.address,
+          latitude: property.latitude,
+          longitude: property.longitude,
+          priceFrom: property.priceFrom,
+          guests: property.guests,
+          amenities: amenities.map((a) => String(a.name)),
+        })}
+      />
       {/* ── Γκαλερί ───────────────────────────────────────────── */}
       <Container className="pt-6">
         <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">

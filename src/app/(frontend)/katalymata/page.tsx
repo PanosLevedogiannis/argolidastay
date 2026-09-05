@@ -9,6 +9,7 @@ import { PropertyCard } from '@/components/PropertyCard'
 import { ButtonLink, Container } from '@/components/ui'
 import { href, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { pageAlternates } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
   return {
     title: t(locale, 'list.title'),
+    alternates: pageAlternates('/katalymata', locale),
     description:
       locale === 'en'
         ? 'Rooms, apartments and villas in Nafplio, Tolo, Epidavros, Porto Cheli and Ermioni.'

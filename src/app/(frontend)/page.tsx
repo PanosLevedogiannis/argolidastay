@@ -8,8 +8,19 @@ import { SearchBar } from '@/components/SearchBar'
 import { ButtonLink, Container, Section, Stat } from '@/components/ui'
 import { href, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { pageAlternates } from '@/lib/seo'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'home.title'),
+    description: t(locale, 'home.subtitle'),
+    alternates: pageAlternates('/', locale),
+  }
+}
 
 export default async function HomePage() {
   const locale = await getLocale()

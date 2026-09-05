@@ -6,6 +6,7 @@ import { Container, Section, Stat } from '@/components/ui'
 import { OwnerForm } from '@/components/OwnerForm'
 import { t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { pageAlternates } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t(locale, 'nav.listYours'),
     description: t(locale, 'home.ownerCtaSub'),
+    alternates: pageAlternates('/kataxorisi', locale),
   }
 }
 

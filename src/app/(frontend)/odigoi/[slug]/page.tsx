@@ -10,6 +10,7 @@ import { RichText } from '@/components/RichText'
 import { Container } from '@/components/ui'
 import { href as localeHref, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { articleJsonLd, JsonLd, pageAlternates } from '@/lib/seo'
 import type { Article, Property } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,7 @@ export async function generateMetadata({
   return {
     title: String(article.title),
     description: article.excerpt ?? undefined,
+    alternates: pageAlternates(`/odigoi/${slug}`, locale),
     openGraph: {
       title: String(article.title),
       description: article.excerpt ?? undefined,
@@ -62,6 +64,17 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   return (
     <article>
+      <JsonLd
+        data={articleJsonLd({
+          title: String(article.title),
+          excerpt: article.excerpt,
+          slug: article.slug,
+          locale,
+          image: cover?.url,
+          publishedAt: article.publishedAt,
+          updatedAt: article.updatedAt,
+        })}
+      />
       {cover?.url && (
         <div className="relative h-56 w-full sm:h-96">
           <Image

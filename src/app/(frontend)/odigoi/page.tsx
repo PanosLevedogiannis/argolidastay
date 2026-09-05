@@ -7,6 +7,7 @@ import config from '@payload-config'
 import { Container } from '@/components/ui'
 import { href, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { pageAlternates } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t(locale, 'guides.title'),
     description: t(locale, 'guides.subtitle'),
+    alternates: pageAlternates('/odigoi', locale),
   }
 }
 

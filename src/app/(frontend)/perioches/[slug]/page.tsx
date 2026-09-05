@@ -9,6 +9,7 @@ import { PropertyCard } from '@/components/PropertyCard'
 import { ButtonLink, Container } from '@/components/ui'
 import { href as localeHref, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
+import { pageAlternates } from '@/lib/seo'
 import type { Area } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -37,6 +38,7 @@ export async function generateMetadata({
 
   return {
     title: `${t(locale, 'nav.properties')} — ${area.name}`,
+    alternates: pageAlternates(`/perioches/${slug}`, locale),
     description:
       area.description ||
       (locale === 'en'
