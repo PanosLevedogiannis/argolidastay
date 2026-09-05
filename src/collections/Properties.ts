@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { revealPhone } from '../endpoints/revealPhone'
+
 /** Ορατό μόνο στο προσωπικό — δεν βγαίνει ποτέ στο δημόσιο API. */
 const staffOnly = { read: ({ req: { user } }: { req: { user?: unknown } }) => Boolean(user) }
 
@@ -42,6 +44,7 @@ export const Properties: CollectionConfig = {
       }
     },
   },
+  endpoints: [revealPhone],
   versions: {
     drafts: {
       autosave: { interval: 2000 },

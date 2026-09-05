@@ -41,6 +41,10 @@ export const Enquiries: CollectionConfig = {
      * Τρέχει μετά την αποθήκευση και ποτέ δεν ρίχνει σφάλμα προς τα έξω:
      * αν πέσει ο πάροχος SMS, το αίτημα έχει ήδη σωθεί και φαίνεται στο
      * πάνελ — προτιμότερο από το να δει ο επισκέπτης σφάλμα και να φύγει.
+     *
+     * Το `req` περνιέται σε κάθε κλήση ώστε να συμμετέχουν στην ίδια
+     * συναλλαγή με τη δημιουργία. Χωρίς αυτό η εγγραφή δεν είναι ακόμα
+     * ορατή και η ενημέρωση αποτυγχάνει με «δεν βρέθηκε».
      */
     afterChange: [
       async ({ doc, operation, req }) => {
@@ -52,6 +56,7 @@ export const Enquiries: CollectionConfig = {
             id: typeof doc.property === 'object' ? doc.property.id : doc.property,
             depth: 0,
             overrideAccess: true,
+            req,
           })
 
           if (!property?.contactPhone) {
@@ -60,6 +65,7 @@ export const Enquiries: CollectionConfig = {
               id: doc.id,
               data: { notificationLog: 'Δεν στάλθηκε: το κατάλυμα δεν έχει κινητό.' },
               overrideAccess: true,
+              req,
             })
             return doc
           }
@@ -85,6 +91,7 @@ export const Enquiries: CollectionConfig = {
               ...(result.ok ? { status: 'notified' } : {}),
             },
             overrideAccess: true,
+            req,
           })
         } catch (err) {
           req.payload.logger.error(`Αποτυχία ειδοποίησης για αίτημα ${doc.id}: ${err}`)
