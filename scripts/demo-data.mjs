@@ -23,24 +23,36 @@ if (!PASSWORD) {
 const DEMO = [
   { name: 'Βίλα Ελένη', slug: 'villa-eleni', area: 'tolo', type: 'villa', guests: 8,
     bedrooms: 4, bathrooms: 3, from: 140, to: 260, featured: true, beach: 120,
+    lat: 37.5197, lng: 22.8619, address: 'Ακτή Τολού 24, Τολό',
     short: 'Ανεξάρτητη βίλα με πισίνα και θέα στον κόλπο του Τολού.' },
   { name: 'Διαμέρισμα Ακροναυπλία', slug: 'diamerisma-akronafplia', area: 'nafplio',
     type: 'apartment', guests: 4, bedrooms: 2, bathrooms: 1, from: 65, to: 110,
-    featured: true, beach: 400,
+    featured: true, beach: 400, lat: 37.5675, lng: 22.8003,
+    address: 'Σταϊκοπούλου 18, Παλιά Πόλη, Ναύπλιο',
     short: 'Στην Παλιά Πόλη, δύο βήματα από την πλατεία Συντάγματος.' },
   { name: 'Στούντιο Θαλασσινό', slug: 'studio-thalassino', area: 'drepano',
     type: 'studio', guests: 2, bedrooms: 1, bathrooms: 1, from: 45, to: 70, beach: 50,
+    lat: 37.5340, lng: 22.8845, address: 'Παραλία Βιβαρίου 7, Δρέπανο',
     short: 'Μικρό και φωτεινό, με βεράντα πάνω στη θάλασσα.' },
   { name: 'Πέτρινη Κατοικία Επιδαύρου', slug: 'petrini-katoikia-epidavrou',
     area: 'epidavros', type: 'house', guests: 6, bedrooms: 3, bathrooms: 2,
-    from: 95, to: 150, featured: true, beach: 900,
+    from: 95, to: 150, featured: true, beach: 900, lat: 37.6301, lng: 23.1553,
+    address: 'Οδός Ασκληπιού 12, Παλαιά Επίδαυρος',
     short: 'Παραδοσιακή πέτρινη κατοικία μέσα σε ελαιώνα.' },
   { name: 'Μεζονέτα Πόρτο Χέλι', slug: 'mezoneta-porto-cheli', area: 'porto-cheli',
     type: 'maisonette', guests: 5, bedrooms: 2, bathrooms: 2, from: 110, to: 190, beach: 250,
+    lat: 37.3241, lng: 23.1461, address: 'Λιμάνι Πόρτο Χελίου 5',
     short: 'Σύγχρονη μεζονέτα με ιδιωτικό κήπο, κοντά στο λιμάνι.' },
   { name: 'Ξενώνας Ερμιόνη', slug: 'xenonas-ermioni', area: 'ermioni',
     type: 'guesthouse', guests: 3, bedrooms: 1, bathrooms: 1, from: 55, to: 85, beach: 300,
+    lat: 37.3881, lng: 23.2494, address: 'Μιαούλη 33, Ερμιόνη',
     short: 'Οικογενειακός ξενώνας με πρωινό, στο κέντρο της Ερμιόνης.' },
+]
+
+// Κάθε κατάλυμα παίρνει και δύο επιπλέον φωτογραφίες για τη γκαλερί.
+const GALLERY_TINTS = [
+  [0x9a, 0xa8, 0x8c], [0xc4, 0xa4, 0x7a], [0x7f, 0x94, 0x9e],
+  [0xb8, 0x8c, 0x6e], [0x8c, 0x9d, 0x86], [0xa9, 0x93, 0x84],
 ]
 
 const COLORS = [
@@ -130,24 +142,39 @@ async function main() {
   const amenRes = await api('/api/amenities?limit=100', { token })
   const amenityIds = amenRes.json.docs.map((a) => a.id)
 
-  let made = 0
-  for (const [i, d] of DEMO.entries()) {
-    const png = await gradientPng(1200, 900, COLORS[i % COLORS.length])
-
+  async function upload(name, slug, tint, suffix = '') {
+    const png = gradientPng(1200, 900, tint)
     const form = new FormData()
-    form.append('file', new Blob([png], { type: 'image/png' }), `${d.slug}.png`)
-    form.append('_payload', JSON.stringify({ alt: d.name }))
-
-    const upload = await fetch(`${BASE}/api/media`, {
+    form.append('file', new Blob([png], { type: 'image/png' }), `${slug}${suffix}.png`)
+    form.append('_payload', JSON.stringify({ alt: name }))
+    const res = await fetch(`${BASE}/api/media`, {
       method: 'POST',
       headers: { Authorization: `JWT ${token}` },
       body: form,
     })
-    const uploaded = await upload.json()
-    const mediaId = uploaded?.doc?.id
-    if (!mediaId) {
+    return (await res.json())?.doc?.id
+  }
+
+  // Ποια υπάρχουν ήδη — τα ενημερώνουμε αντί να σκάσουμε σε διπλό slug.
+  const existing = await api('/api/properties?limit=200&depth=0', { token })
+  const idBySlug = Object.fromEntries(
+    (existing.json.docs ?? []).map((d) => [d.slug, d.id]),
+  )
+
+  let made = 0
+  for (const [i, d] of DEMO.entries()) {
+    const coverId = await upload(d.name, d.slug, COLORS[i % COLORS.length])
+    if (!coverId) {
       console.log(`  ✗ ${d.name}: αποτυχία εικόνας`)
       continue
+    }
+
+    // Δύο επιπλέον για τη γκαλερί.
+    const gallery = []
+    for (let g = 1; g <= 2; g++) {
+      const tint = GALLERY_TINTS[(i + g * 2) % GALLERY_TINTS.length]
+      const id = await upload(`${d.name} — φωτογραφία ${g + 1}`, d.slug, tint, `-${g}`)
+      if (id) gallery.push({ image: id })
     }
 
     const picked = amenityIds
@@ -155,34 +182,40 @@ async function main() {
       .sort(() => Math.random() - 0.5)
       .slice(0, 5)
 
-    const res = await api('/api/properties', {
-      method: 'POST',
-      token,
-      body: {
-        name: d.name,
-        slug: d.slug,
-        type: d.type,
-        area: areaBySlug[d.area],
-        guests: d.guests,
-        bedrooms: d.bedrooms,
-        bathrooms: d.bathrooms,
-        beds: d.guests,
-        shortDescription: d.short,
-        coverImage: mediaId,
-        amenities: picked,
-        distanceToBeach: d.beach,
-        priceFrom: d.from,
-        priceTo: d.to,
-        featured: Boolean(d.featured),
-        contactName: 'Ιδιοκτήτης δοκιμής',
-        contactPhone: '+306940000000',
-        mite: `00001234${i}`,
-        _status: 'published',
-      },
-    })
+    const body = {
+      name: d.name,
+      slug: d.slug,
+      type: d.type,
+      area: areaBySlug[d.area],
+      guests: d.guests,
+      bedrooms: d.bedrooms,
+      bathrooms: d.bathrooms,
+      beds: d.guests,
+      shortDescription: d.short,
+      coverImage: coverId,
+      gallery,
+      amenities: picked,
+      address: d.address,
+      latitude: d.lat,
+      longitude: d.lng,
+      distanceToBeach: d.beach,
+      priceFrom: d.from,
+      priceTo: d.to,
+      featured: Boolean(d.featured),
+      contactName: 'Ιδιοκτήτης δοκιμής',
+      contactPhone: '+306940000000',
+      mite: `00001234${i}`,
+      _status: 'published',
+    }
+
+    const id = idBySlug[d.slug]
+    const res = id
+      ? await api(`/api/properties/${id}`, { method: 'PATCH', token, body })
+      : await api('/api/properties', { method: 'POST', token, body })
+
     if (res.ok) {
       made++
-      console.log(`  ✓ ${d.name}`)
+      console.log(`  ✓ ${d.name}${id ? ' (ενημερώθηκε)' : ''} — ${gallery.length + 1} φωτογραφίες`)
     } else {
       console.log(`  ✗ ${d.name}: ${JSON.stringify(res.json).slice(0, 140)}`)
     }

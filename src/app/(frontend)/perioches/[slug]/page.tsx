@@ -122,7 +122,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
         {properties.docs.length > 0 && (
           <>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="reveal-stagger mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {properties.docs.map((p) => (
                 <PropertyCard key={p.id} property={p} locale={locale} />
               ))}

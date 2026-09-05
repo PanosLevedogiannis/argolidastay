@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 import { ContactBox } from '@/components/ContactBox'
+import { Gallery } from '@/components/Gallery'
 import { Container } from '@/components/ui'
 import { RichText } from '@/components/RichText'
 import type { Amenity, Media, Property } from '@/payload-types'
@@ -131,35 +132,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           )}
         </nav>
 
-        <div className="grid gap-2 sm:grid-cols-4 sm:grid-rows-2">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-sand-200 sm:col-span-2 sm:row-span-2 sm:aspect-auto">
-            {cover?.url && (
-              <Image
-                src={cover.sizes?.hero?.url || cover.url}
-                alt={cover.alt || String(property.name)}
-                fill
-                priority
-                sizes="(max-width: 640px) 100vw, 50vw"
-                className="object-cover"
-              />
-            )}
-          </div>
-
-          {gallery.slice(0, 4).map((img) => (
-            <div
-              key={img.id}
-              className="relative hidden aspect-[4/3] overflow-hidden rounded-card bg-sand-200 sm:block"
-            >
-              <Image
-                src={img.sizes?.card?.url || img.url || ''}
-                alt={img.alt || String(property.name)}
-                fill
-                sizes="25vw"
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
+        <Gallery
+          images={[...(cover ? [cover] : []), ...gallery]}
+          alt={String(property.name)}
+          locale={locale}
+        />
       </Container>
 
       {/* ── Περιεχόμενο + κουτί επικοινωνίας ──────────────────── */}

@@ -45,7 +45,7 @@ export default async function ArticlesPage() {
           {t(locale, 'guides.empty')}
         </p>
       ) : (
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="reveal-stagger mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {articles.docs.map((a) => {
             const img = typeof a.coverImage === 'object' ? a.coverImage : null
             const src = img?.sizes?.card?.url || img?.url

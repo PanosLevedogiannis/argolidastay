@@ -59,16 +59,16 @@ export default async function HomePage() {
 
         <Container className="py-14 sm:py-24">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-clay-600">{t(locale, 'home.eyebrow')}</p>
-            <h1 className="mt-3 text-h1 text-balance sm:text-display">
+            <p className="rise text-sm font-medium text-clay-600">{t(locale, 'home.eyebrow')}</p>
+            <h1 className="rise rise-delay-1 mt-3 text-h1 text-balance sm:text-display">
               {t(locale, 'home.title')}
             </h1>
-            <p className="mt-4 max-w-xl text-lg text-ink-700 text-pretty">
+            <p className="rise rise-delay-2 mt-4 max-w-xl text-lg text-ink-700 text-pretty">
               {t(locale, 'home.subtitle')}
             </p>
           </div>
 
-          <div className="mt-8 max-w-4xl">
+          <div className="rise rise-delay-3 mt-8 max-w-4xl">
             <SearchBar areas={areaOptions} locale={locale} />
           </div>
 
@@ -91,7 +91,7 @@ export default async function HomePage() {
             </ButtonLink>
           }
         >
-          <div className="reveal grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="reveal-stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {showcase.map((p) => (
               <PropertyCard key={p.id} property={p} locale={locale} />
             ))}
@@ -106,7 +106,7 @@ export default async function HomePage() {
           title={t(locale, 'home.areasTitle')}
           subtitle={t(locale, 'home.areasSub')}
         >
-          <div className="reveal grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featuredAreas.map((area) => {
               const img = typeof area.image === 'object' ? area.image : null
               const src = img?.sizes?.card?.url || img?.url
@@ -138,7 +138,7 @@ export default async function HomePage() {
 
       {/* ── Πώς δουλεύει ──────────────────────────────────────── */}
       <Section title={t(locale, 'home.howTitle')} className="bg-sand-100">
-        <ol className="reveal grid gap-6 sm:grid-cols-3">
+        <ol className="reveal-stagger grid gap-6 sm:grid-cols-3">
           {[1, 2, 3].map((n) => (
             <li key={n} className="rounded-card bg-white p-6 shadow-card">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-clay-100 font-semibold text-clay-700">

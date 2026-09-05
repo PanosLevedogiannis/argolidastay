@@ -46,7 +46,7 @@ export default async function AreasPage() {
         {t(locale, 'areas.subtitle')}
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="reveal-stagger mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {areas.docs.map((area) => {
           const img = typeof area.image === 'object' ? area.image : null
           const src = img?.sizes?.card?.url || img?.url
