@@ -9,10 +9,12 @@ import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Καταχώρησε το κατάλυμά σου',
-  description:
-    'Πρόβαλε το κατάλυμά σου στην Αργολίδα και δέξου τηλεφωνήματα απευθείας από τους επισκέπτες, χωρίς προμήθεια ανά κράτηση.',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'nav.listYours'),
+    description: t(locale, 'home.ownerCtaSub'),
+  }
 }
 
 export default async function OwnerLandingPage() {

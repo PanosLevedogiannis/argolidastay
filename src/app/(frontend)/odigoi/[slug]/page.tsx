@@ -14,12 +14,13 @@ import type { Article, Property } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
-async function getArticle(slug: string): Promise<Article | null> {
+async function getArticle(slug: string, locale?: 'el' | 'en'): Promise<Article | null> {
   const payload = await getPayload({ config })
   const res = await payload.find({
     collection: 'articles',
     where: { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
     depth: 2,
+    locale,
     limit: 1,
   })
   return res.docs[0] ?? null
@@ -31,8 +32,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const article = await getArticle(slug)
-  if (!article) return { title: 'Ο οδηγός δεν βρέθηκε' }
+  const locale = await getLocale()
+  const article = await getArticle(slug, locale)
+  if (!article) return { title: locale === 'en' ? 'Guide not found' : 'Ο οδηγός δεν βρέθηκε' }
 
   const cover = typeof article.coverImage === 'object' ? article.coverImage : null
   return {
@@ -49,10 +51,9 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const article = await getArticle(slug)
-  if (!article) notFound()
-
   const locale = await getLocale()
+  const article = await getArticle(slug, locale)
+  if (!article) notFound()
   const cover = typeof article.coverImage === 'object' ? article.coverImage : null
   const area = typeof article.area === 'object' ? article.area : null
   const related = (article.relatedProperties ?? []).filter(

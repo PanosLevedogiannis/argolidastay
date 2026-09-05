@@ -14,10 +14,15 @@ export const dynamic = 'force-dynamic'
 
 const PER_PAGE = 12
 
-export const metadata: Metadata = {
-  title: 'Καταλύματα στην Αργολίδα',
-  description:
-    'Δωμάτια, διαμερίσματα και βίλες σε Ναύπλιο, Τολό, Επίδαυρο, Πόρτο Χέλι και Ερμιόνη.',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'list.title'),
+    description:
+      locale === 'en'
+        ? 'Rooms, apartments and villas in Nafplio, Tolo, Epidavros, Porto Cheli and Ermioni.'
+        : 'Δωμάτια, διαμερίσματα και βίλες σε Ναύπλιο, Τολό, Επίδαυρο, Πόρτο Χέλι και Ερμιόνη.',
+  }
 }
 
 type Params = Promise<{ [k: string]: string | string[] | undefined }>

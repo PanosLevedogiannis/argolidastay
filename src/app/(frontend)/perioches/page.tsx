@@ -10,10 +10,12 @@ import { getLocale } from '@/lib/server-locale'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Περιοχές της Αργολίδας',
-  description:
-    'Ναύπλιο, Τολό, Επίδαυρος, Πόρτο Χέλι, Ερμιόνη και οι υπόλοιπες περιοχές της Αργολίδας.',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: t(locale, 'areas.title'),
+    description: t(locale, 'areas.subtitle'),
+  }
 }
 
 export default async function AreasPage() {

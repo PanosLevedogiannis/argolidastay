@@ -13,12 +13,13 @@ import type { Area } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
-async function getArea(slug: string): Promise<Area | null> {
+async function getArea(slug: string, locale?: 'el' | 'en'): Promise<Area | null> {
   const payload = await getPayload({ config })
   const res = await payload.find({
     collection: 'areas',
     where: { slug: { equals: slug } },
     depth: 1,
+    locale,
     limit: 1,
   })
   return res.docs[0] ?? null
@@ -30,14 +31,17 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const area = await getArea(slug)
-  if (!area) return { title: 'Η περιοχή δεν βρέθηκε' }
+  const locale = await getLocale()
+  const area = await getArea(slug, locale)
+  if (!area) return { title: locale === 'en' ? 'Area not found' : 'Η περιοχή δεν βρέθηκε' }
 
   return {
-    title: `Καταλύματα — ${area.name}`,
+    title: `${t(locale, 'nav.properties')} — ${area.name}`,
     description:
       area.description ||
-      `Δωμάτια, διαμερίσματα και βίλες στην περιοχή ${area.name} της Αργολίδας.`,
+      (locale === 'en'
+        ? `Rooms, apartments and villas in ${area.name}, Argolida.`
+        : `Δωμάτια, διαμερίσματα και βίλες στην περιοχή ${area.name} της Αργολίδας.`),
   }
 }
 
@@ -50,10 +54,9 @@ export async function generateMetadata({
  */
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const area = await getArea(slug)
-  if (!area) notFound()
-
   const locale = await getLocale()
+  const area = await getArea(slug, locale)
+  if (!area) notFound()
   const payload = await getPayload({ config })
 
   const [properties, articles] = await Promise.all([

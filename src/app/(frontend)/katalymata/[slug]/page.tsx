@@ -32,8 +32,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const property = await getProperty(slug)
-  if (!property) return { title: 'Το κατάλυμα δεν βρέθηκε' }
+  const locale = await getLocale()
+  const property = await getProperty(slug, locale)
+  if (!property) {
+    return { title: locale === 'en' ? 'Property not found' : 'Το κατάλυμα δεν βρέθηκε' }
+  }
 
   const area = typeof property.area === 'object' ? property.area : null
   const cover = typeof property.coverImage === 'object' ? property.coverImage : null
