@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { switchPath, type Locale } from '@/lib/i18n'
@@ -8,12 +7,18 @@ import { switchPath, type Locale } from '@/lib/i18n'
 /**
  * Επιλογέας γλώσσας.
  *
- * Είναι σύνδεσμος και όχι κουμπί με JavaScript, για δύο λόγους: το Google
- * ακολουθεί συνδέσμους και έτσι βρίσκει την άλλη έκδοση, και ο επισκέπτης
- * μπορεί να ανοίξει την αγγλική σε νέα καρτέλα.
+ * Χρησιμοποιείται κανονικό `<a>` και όχι το `<Link>` του Next: η αλλαγή
+ * γλώσσας φορτώνει τη σελίδα από την αρχή. Είναι σκόπιμο — η γλώσσα
+ * καθορίζεται από τον server, οπότε η πλήρης φόρτωση εγγυάται ότι όλα
+ * (κείμενα, μεταδεδομένα, `<html lang>`) έρχονται στη νέα γλώσσα, χωρίς να
+ * μείνει τίποτα από την προηγούμενη στη μνήμη του browser.
  *
- * Οδηγεί στην ΙΔΙΑ σελίδα στην άλλη γλώσσα, όχι στην αρχική — όποιος
- * διαβάζει ένα κατάλυμα και αλλάζει γλώσσα θέλει το ίδιο κατάλυμα.
+ * Το κόστος είναι μια κανονική φόρτωση αντί για άμεση εναλλαγή, αλλά η
+ * αλλαγή γλώσσας γίνεται μία φορά ανά επίσκεψη. Ο browser δείχνει τον δικό
+ * του δείκτη φόρτωσης, οπότε ο χρήστης βλέπει αμέσως ότι κάτι συμβαίνει.
+ *
+ * Είναι επίσης σύνδεσμος και όχι κουμπί, ώστε το Google να τον ακολουθεί
+ * και να βρίσκει την άλλη έκδοση.
  */
 export function LanguageSwitcher({ locale }: { locale: Locale }) {
   const pathname = usePathname() || '/'
@@ -21,7 +26,7 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
   const label = other === 'en' ? 'English' : 'Ελληνικά'
 
   return (
-    <Link
+    <a
       href={switchPath(pathname, other)}
       hrefLang={other}
       title={label}
@@ -42,6 +47,6 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
         <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" />
       </svg>
       <span className="text-sm font-medium uppercase">{other}</span>
-    </Link>
+    </a>
   )
 }
