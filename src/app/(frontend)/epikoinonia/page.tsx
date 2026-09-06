@@ -25,8 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
  * Συμπλήρωσέ τα εδώ πριν βγει το site στον αέρα — μια σελίδα επικοινωνίας
  * χωρίς τρόπο επικοινωνίας είναι χειρότερη από το να μην υπάρχει.
  */
-const EMAIL = 'info@argolidastay.gr'
-const PHONE = ''
+const EMAIL: string = 'info@argolidastay.gr'
+const PHONE: string = ''
 
 export default async function ContactPage() {
   const locale = await getLocale()
