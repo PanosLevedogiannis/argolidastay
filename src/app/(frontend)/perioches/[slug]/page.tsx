@@ -7,6 +7,7 @@ import config from '@payload-config'
 
 import { PropertyCard } from '@/components/PropertyCard'
 import { ButtonLink, Container } from '@/components/ui'
+import { PhotoCredit } from '@/components/PhotoCredit'
 import { href as localeHref, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
 import { pageAlternates } from '@/lib/seo'
@@ -96,6 +97,11 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 to-transparent" />
         </div>
+      )}
+      {heroSrc && (
+        <Container>
+          <PhotoCredit credit={img?.credit} className="pt-2 text-right" />
+        </Container>
       )}
 
       <Container className="py-10">

@@ -8,6 +8,7 @@ import config from '@payload-config'
 import { PropertyCard } from '@/components/PropertyCard'
 import { RichText } from '@/components/RichText'
 import { Container } from '@/components/ui'
+import { PhotoCredit } from '@/components/PhotoCredit'
 import { href as localeHref, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
 import { articleJsonLd, JsonLd, pageAlternates } from '@/lib/seo'
@@ -76,16 +77,21 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         })}
       />
       {cover?.url && (
-        <div className="relative h-56 w-full sm:h-96">
-          <Image
-            src={cover.sizes?.hero?.url || cover.url}
-            alt={cover.alt || String(article.title)}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
+        <>
+          <div className="relative h-56 w-full sm:h-96">
+            <Image
+              src={cover.sizes?.hero?.url || cover.url}
+              alt={cover.alt || String(article.title)}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
+          <Container>
+            <PhotoCredit credit={cover.credit} className="pt-2 text-right" />
+          </Container>
+        </>
       )}
 
       <Container className="py-10">
