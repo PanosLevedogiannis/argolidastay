@@ -47,6 +47,14 @@ const DEMO = [
     type: 'guesthouse', guests: 3, bedrooms: 1, bathrooms: 1, from: 55, to: 85, beach: 300,
     lat: 37.3881, lng: 23.2494, address: 'Μιαούλη 33, Ερμιόνη',
     short: 'Οικογενειακός ξενώνας με πρωινό, στο κέντρο της Ερμιόνης.' },
+  { name: 'Σοφίτα Παλαμήδι', slug: 'sofita-palamidi', area: 'nafplio',
+    type: 'studio', guests: 2, bedrooms: 1, bathrooms: 1, from: 55, to: 90, beach: 550,
+    lat: 37.5651, lng: 22.8041, address: 'Ποταμιάνου 6, Ναύπλιο',
+    short: 'Σοφίτα με θέα στο κάστρο, για δύο.' },
+  { name: 'Παραθαλάσσιο Διαμέρισμα Τολό', slug: 'diamerisma-tolo', area: 'tolo',
+    type: 'apartment', guests: 4, bedrooms: 2, bathrooms: 1, from: 70, to: 120, beach: 40,
+    lat: 37.5211, lng: 22.8583, address: 'Μπουμπουλίνας 11, Τολό',
+    short: 'Πρώτη σειρά στη θάλασσα, με μεγάλο μπαλκόνι.' },
 ]
 
 // Κάθε κατάλυμα παίρνει και δύο επιπλέον φωτογραφίες για τη γκαλερί.

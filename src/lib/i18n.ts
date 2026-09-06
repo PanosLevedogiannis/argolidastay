@@ -122,6 +122,7 @@ const el: Dict = {
   'prop.bathrooms': 'μπάνια',
   'prop.sqm': 'τ.μ.',
   'prop.inArea': 'στην περιοχή',
+  'prop.nearby': 'Άλλα καταλύματα στην περιοχή',
 
   'contact.askPrice': 'Επικοινωνήστε για τιμές',
   'contact.priceNote': 'ενδεικτικά, ανά διανυκτέρευση',
@@ -152,6 +153,9 @@ const el: Dict = {
   'footer.listing': 'Καταχώρηση καταλύματος',
   'footer.legal':
     'Οι τιμές και η διαθεσιμότητα συμφωνούνται απευθείας με τον ιδιοκτήτη κάθε καταλύματος.',
+  'footer.contact': 'Επικοινωνία',
+  'footer.terms': 'Όροι χρήσης',
+  'footer.privacy': 'Πολιτική απορρήτου',
 }
 
 const en: Dict = {
@@ -236,6 +240,7 @@ const en: Dict = {
   'prop.bathrooms': 'bathrooms',
   'prop.sqm': 'm²',
   'prop.inArea': 'in',
+  'prop.nearby': 'More places to stay in',
 
   'contact.askPrice': 'Contact for prices',
   'contact.priceNote': 'indicative, per night',
@@ -265,6 +270,9 @@ const en: Dict = {
   'footer.forOwners': 'For owners',
   'footer.listing': 'List a property',
   'footer.legal': 'Prices and availability are agreed directly with each property owner.',
+  'footer.contact': 'Contact',
+  'footer.terms': 'Terms of use',
+  'footer.privacy': 'Privacy policy',
 }
 
 const DICTS: Record<Locale, Dict> = { el, en }

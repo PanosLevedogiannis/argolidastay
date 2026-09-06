@@ -7,6 +7,7 @@ import config from '@payload-config'
 
 import { ContactBox } from '@/components/ContactBox'
 import { Gallery } from '@/components/Gallery'
+import { PropertyCard } from '@/components/PropertyCard'
 import { Container } from '@/components/ui'
 import { RichText } from '@/components/RichText'
 import type { Amenity, Media, Property } from '@/payload-types'
@@ -95,6 +96,27 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
   )
 
   const hasMap = typeof property.latitude === 'number' && typeof property.longitude === 'number'
+
+  // Άλλα καταλύματα στην ίδια περιοχή. Κρατούν τον επισκέπτη μέσα στο site
+  // αν αυτό δεν του κάνει, και δίνουν εσωτερικούς συνδέσμους που βοηθούν
+  // το Google να καταλάβει τη δομή του καταλόγου.
+  const payload = await getPayload({ config })
+  const related = area
+    ? await payload.find({
+        collection: 'properties',
+        where: {
+          and: [
+            { area: { equals: area.id } },
+            { id: { not_equals: property.id } },
+            { _status: { equals: 'published' } },
+          ],
+        },
+        depth: 1,
+        locale,
+        limit: 3,
+        sort: ['-featured', '-createdAt'],
+      })
+    : null
 
   return (
     <>
@@ -231,6 +253,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             />
           </aside>
         </div>
+
+        {related && related.docs.length > 0 && (
+          <section className="mt-16 border-t border-sand-200 pt-10">
+            <h2 className="text-h2">
+              {t(locale, 'prop.nearby')} {area?.name}
+            </h2>
+            <div className="reveal-stagger mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {related.docs.map((p) => (
+                <PropertyCard key={p.id} property={p} locale={locale} />
+              ))}
+            </div>
+          </section>
+        )}
       </Container>
     </>
   )

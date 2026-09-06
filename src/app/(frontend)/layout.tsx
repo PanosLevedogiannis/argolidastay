@@ -136,6 +136,21 @@ function Footer({ locale }: { locale: Locale }) {
                   {t(locale, 'footer.listing')}
                 </Link>
               </li>
+              <li>
+                <Link href={href(locale, '/epikoinonia')} className="hover:text-ink-900">
+                  {t(locale, 'footer.contact')}
+                </Link>
+              </li>
+              <li>
+                <Link href={href(locale, '/oroi-chrisis')} className="hover:text-ink-900">
+                  {t(locale, 'footer.terms')}
+                </Link>
+              </li>
+              <li>
+                <Link href={href(locale, '/prosopika-dedomena')} className="hover:text-ink-900">
+                  {t(locale, 'footer.privacy')}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
