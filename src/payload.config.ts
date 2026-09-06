@@ -24,6 +24,13 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: {
       titleSuffix: '— ArgolidaStay',
+      icons: [{ rel: 'icon', type: 'image/svg+xml', url: '/icon.svg' }],
+    },
+    components: {
+      graphics: {
+        Logo: '@/admin/Logo#default',
+        Icon: '@/admin/Icon#default',
+      },
     },
   },
 

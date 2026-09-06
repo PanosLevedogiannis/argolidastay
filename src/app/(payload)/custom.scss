@@ -1,1 +1,74 @@
-/* Προσαρμογές εμφάνισης του πάνελ διαχείρισης. */
+/*
+ * Εμφάνιση του πάνελ διαχείρισης.
+ *
+ * Το Payload εκθέτει τα χρώματά του ως μεταβλητές CSS, οπότε αρκεί να τις
+ * επαναοριστούν — δεν χρειάζεται να ξαναγραφτεί κανένα component. Έτσι το
+ * πάνελ ακολουθεί το site (άμμος και τερακότα) και μια αναβάθμιση του
+ * Payload δεν σπάει τίποτα.
+ */
+
+:root {
+  /* Τονικό χρώμα: τερακότα αντί για το προεπιλεγμένο μπλε. */
+  --theme-success-500: #6b7048;
+
+  --color-base-0: #ffffff;
+  --color-base-50: #fbf9f5;
+  --color-base-100: #f5f1e8;
+  --color-base-150: #ece7da;
+  --color-base-200: #e9e2d3;
+  --color-base-250: #ded5c2;
+  --color-base-300: #d8cdb8;
+  --color-base-350: #c7baa2;
+  --color-base-400: #b9ab90;
+  --color-base-500: #96876c;
+  --color-base-600: #766c60;
+  --color-base-700: #4a423a;
+  --color-base-800: #362f29;
+  --color-base-850: #2b251f;
+  --color-base-900: #241f1a;
+  --color-base-1000: #14110e;
+}
+
+/* Ανοιχτό θέμα — ο διαχειριστής δουλεύει με φωτογραφίες, που κρίνονται
+   σωστά μόνο σε ανοιχτό φόντο. */
+[data-theme='light'] {
+  --theme-bg: #fbf9f5;
+  --theme-input-bg: #ffffff;
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #fbf9f5;
+  --theme-elevation-100: #f5f1e8;
+
+  --theme-success-500: #6b7048;
+  --theme-error-500: #b5563a;
+}
+
+/* Τα κύρια κουμπιά σε τερακότα, ώστε το «Save» να ξεχωρίζει αμέσως. */
+.btn--style-primary {
+  --color: #fbf9f5;
+
+  .btn__content {
+    color: #fbf9f5;
+  }
+
+  background-color: #b5563a;
+  border-color: #b5563a;
+
+  &:hover:not(.btn--disabled) {
+    background-color: #9c4630;
+    border-color: #9c4630;
+  }
+}
+
+/* Οι ομάδες του πλαϊνού μενού λίγο πιο ευδιάκριτες: με επτά collections,
+   το «Κατάλογος» και το «Περιεχόμενο» πρέπει να ξεχωρίζουν με μια ματιά. */
+.nav-group__label {
+  color: #9c4630;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Η οθόνη σύνδεσης παίρνει την ίδια ήπια διαβάθμιση με το site. */
+.login {
+  background: linear-gradient(180deg, #f7ecd5 0%, #f5f1e8 45%, #fbf9f5 100%);
+}
