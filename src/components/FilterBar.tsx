@@ -30,13 +30,20 @@ export function FilterBar({
   const [open, setOpen] = useState(false)
 
   const current = {
+    q: params.get('q') ?? '',
     area: params.get('area') ?? '',
     guests: params.get('guests') ?? '',
     type: params.get('type') ?? '',
+    sort: params.get('sort') ?? '',
     amenities: params.getAll('amenity'),
   }
 
+  // Ξεχωριστή κατάσταση για το πεδίο κειμένου: δεν θέλουμε αίτημα σε κάθε
+  // πλήκτρο, μόνο όταν πατηθεί Enter ή το κουμπί.
+  const [text, setText] = useState(current.q)
+
   const activeCount =
+    (current.q ? 1 : 0) +
     (current.area ? 1 : 0) +
     (current.guests ? 1 : 0) +
     (current.type ? 1 : 0) +
@@ -45,9 +52,11 @@ export function FilterBar({
   function apply(next: Partial<typeof current>) {
     const p = new URLSearchParams()
     const merged = { ...current, ...next }
+    if (merged.q) p.set('q', merged.q)
     if (merged.area) p.set('area', merged.area)
     if (merged.guests) p.set('guests', merged.guests)
     if (merged.type) p.set('type', merged.type)
+    if (merged.sort) p.set('sort', merged.sort)
     merged.amenities.forEach((a) => p.append('amenity', a))
     router.push(href(locale, `/katalymata${p.size ? `?${p}` : ''}`), { scroll: false })
   }
@@ -65,6 +74,26 @@ export function FilterBar({
 
   return (
     <div className="rounded-card bg-sand-100 p-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          apply({ q: text.trim() })
+        }}
+        className="mb-3 flex gap-2"
+      >
+        <input
+          type="search"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={t(locale, 'search.text')}
+          aria-label={t(locale, 'search.text')}
+          className="h-11 flex-1 rounded-xl border-0 bg-white px-4 text-[15px] ring-1 ring-inset ring-sand-200 focus:ring-2 focus:ring-clay-500"
+        />
+        <Button type="submit" size="sm" className="h-11 px-5">
+          {t(locale, 'search.submit')}
+        </Button>
+      </form>
+
       <div className="flex flex-wrap items-center gap-2.5">
         <select
           className={select}
@@ -122,8 +151,28 @@ export function FilterBar({
           )}
         </button>
 
+        <select
+          className={select}
+          value={current.sort}
+          onChange={(e) => apply({ sort: e.target.value })}
+          aria-label={t(locale, 'sort.label')}
+        >
+          <option value="">{t(locale, 'sort.featured')}</option>
+          <option value="price-asc">{t(locale, 'sort.priceAsc')}</option>
+          <option value="price-desc">{t(locale, 'sort.priceDesc')}</option>
+          <option value="guests">{t(locale, 'sort.guests')}</option>
+          <option value="newest">{t(locale, 'sort.newest')}</option>
+        </select>
+
         {activeCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => router.push(href(locale, '/katalymata'))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setText('')
+              router.push(href(locale, '/katalymata'))
+            }}
+          >
             {t(locale, 'search.clear')} ({activeCount})
           </Button>
         )}

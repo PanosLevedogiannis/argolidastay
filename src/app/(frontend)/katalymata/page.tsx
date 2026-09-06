@@ -43,11 +43,29 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
   const locale = await getLocale()
   const payload = await getPayload({ config })
 
+  const q = one(sp.q)?.trim()
   const areaSlug = one(sp.area)
   const guests = one(sp.guests)
   const type = one(sp.type)
+  const sortKey = one(sp.sort)
   const amenitySlugs = many(sp.amenity)
   const page = Number(one(sp.page) ?? 1) || 1
+
+  /**
+   * Σειρά αποτελεσμάτων.
+   *
+   * Προεπιλογή τα προβεβλημένα πρώτα — είναι μέρος αυτού που πληρώνει ο
+   * ιδιοκτήτης. Οι υπόλοιπες επιλογές είναι ρητή επιλογή του επισκέπτη,
+   * οπότε εκεί το «προβεβλημένο» δεν υπερισχύει: αν ζήτησε φθηνότερα, θέλει
+   * φθηνότερα.
+   */
+  const SORTS: Record<string, string[]> = {
+    'price-asc': ['priceFrom'],
+    'price-desc': ['-priceFrom'],
+    guests: ['-guests'],
+    newest: ['-createdAt'],
+  }
+  const sort = SORTS[sortKey ?? ''] ?? ['-featured', '-createdAt']
 
   const [areas, amenities] = await Promise.all([
     payload.find({ collection: 'areas', limit: 100, sort: 'name', locale }),
@@ -63,6 +81,13 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
     .map((a) => a.id)
 
   const conditions: Where[] = [{ _status: { equals: 'published' } }]
+  // Αναζήτηση σε όνομα και σύντομη περιγραφή — αρκεί για κατάλογο αυτού του
+  // μεγέθους· πλήρης αναζήτηση κειμένου θα ήταν υπερβολή για 100 εγγραφές.
+  if (q) {
+    conditions.push({
+      or: [{ name: { like: q } }, { shortDescription: { like: q } }],
+    })
+  }
   if (areaId) conditions.push({ area: { equals: areaId } })
   if (guests) conditions.push({ guests: { greater_than_equal: Number(guests) } })
   if (type) conditions.push({ type: { equals: type } })
@@ -77,7 +102,7 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
     locale,
     limit: PER_PAGE,
     page,
-    sort: ['-featured', '-createdAt'],
+    sort,
   })
 
   const areaOptions = areas.docs.map((a) => ({ value: a.slug, label: String(a.name) }))
@@ -90,6 +115,8 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
 
   function pageHref(n: number) {
     const p = new URLSearchParams()
+    if (q) p.set('q', q)
+    if (sortKey) p.set('sort', sortKey)
     if (areaSlug) p.set('area', areaSlug)
     if (guests) p.set('guests', guests)
     if (type) p.set('type', type)

@@ -23,7 +23,7 @@ export const Properties: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'area', 'type', 'guests', '_status'],
+    defaultColumns: ['name', 'area', 'enquiryCount', 'subscriptionUntil', '_status'],
     group: 'Κατάλογος',
     description: 'Τα καταλύματα που εμφανίζονται στον κατάλογο. Χρησιμοποίησε "Αποθήκευση ως πρόχειρο" όσο δουλεύεις μια καταχώρηση και "Δημοσίευση" όταν είναι έτοιμη.',
   },
@@ -69,6 +69,44 @@ export const Properties: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Λατινικοί χαρακτήρες και παύλες, π.χ. "villa-eleni-tolo".',
+      },
+    },
+    {
+      /**
+       * Πόσα αιτήματα έχει δεχθεί το κατάλυμα.
+       *
+       * Δεν αποθηκεύεται — υπολογίζεται κάθε φορά που ζητείται η εγγραφή
+       * στο πάνελ. Είναι το αντικειμενικό νούμερο που δείχνεις στον
+       * ιδιοκτήτη όταν έρθει η ώρα της ανανέωσης: «πήρες 47 αιτήματα».
+       *
+       * Υπολογίζεται ΜΟΝΟ για το πάνελ. Στο δημόσιο site θα ήταν άχρηστο
+       * και θα πρόσθετε ένα ερώτημα ανά κατάλυμα σε κάθε επίσκεψη.
+       */
+      name: 'enquiryCount',
+      type: 'number',
+      virtual: true,
+      label: 'Αιτήματα',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Σύνολο αιτημάτων και αποκαλύψεων τηλεφώνου.',
+      },
+      hooks: {
+        afterRead: [
+          async ({ req, data }) => {
+            if (!req.user || !data?.id) return undefined
+            try {
+              const res = await req.payload.count({
+                collection: 'enquiries',
+                where: { property: { equals: data.id } },
+                req,
+              })
+              return res.totalDocs
+            } catch {
+              return undefined
+            }
+          },
+        ],
       },
     },
     {
