@@ -171,8 +171,20 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        {/*
+          Παράκαμψη προς το περιεχόμενο. Είναι κρυμμένο μέχρι να εστιαστεί με
+          πληκτρολόγιο. Χωρίς αυτό, όποιος πλοηγείται με Tab — ή με αναγνώστη
+          οθόνης — περνάει από όλο το μενού σε κάθε αλλαγή σελίδας.
+        */}
+        <a
+          href="#periexomeno"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-clay-500 focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-white"
+        >
+          {locale === 'en' ? 'Skip to content' : 'Μετάβαση στο περιεχόμενο'}
+        </a>
+
         <Header locale={locale} />
-        <main className="flex-1">{children}</main>
+        <main id="periexomeno" className="flex-1">{children}</main>
         <Footer locale={locale} />
         <Reveal />
       </body>

@@ -13,7 +13,7 @@ import { RichText } from '@/components/RichText'
 import type { Amenity, Media, Property } from '@/payload-types'
 import { href as localeHref, PROPERTY_TYPES, t, type Locale } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
-import { JsonLd, pageAlternates, propertyJsonLd } from '@/lib/seo'
+import { breadcrumbJsonLd, JsonLd, pageAlternates, propertyJsonLd } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -122,6 +122,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     <>
       {/* Λέει στο Google ότι η σελίδα περιγράφει κατάλυμα, με τιμή και
           τοποθεσία — προϋπόθεση για πλούσιο αποτέλεσμα αναζήτησης. */}
+      <JsonLd
+        data={breadcrumbJsonLd(
+          [
+            { name: t(locale, 'nav.properties'), path: '/katalymata' },
+            ...(area
+              ? [{ name: String(area.name), path: `/perioches/${area.slug}` }]
+              : []),
+            { name: String(property.name), path: `/katalymata/${property.slug}` },
+          ],
+          locale,
+        )}
+      />
       <JsonLd
         data={propertyJsonLd({
           name: String(property.name),

@@ -11,7 +11,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: locale === 'en' ? 'Privacy policy' : 'Πολιτική απορρήτου',
     alternates: pageAlternates('/prosopika-dedomena', locale),
-    robots: { index: false },
   }
 }
 

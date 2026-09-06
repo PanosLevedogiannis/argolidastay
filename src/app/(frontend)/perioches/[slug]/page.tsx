@@ -10,7 +10,7 @@ import { ButtonLink, Container } from '@/components/ui'
 import { PhotoCredit } from '@/components/PhotoCredit'
 import { href as localeHref, t } from '@/lib/i18n'
 import { getLocale } from '@/lib/server-locale'
-import { pageAlternates } from '@/lib/seo'
+import { breadcrumbJsonLd, JsonLd, pageAlternates } from '@/lib/seo'
 import type { Area } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -85,6 +85,15 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
+      <JsonLd
+        data={breadcrumbJsonLd(
+          [
+            { name: t(locale, 'nav.areas'), path: '/perioches' },
+            { name: String(area.name), path: `/perioches/${area.slug}` },
+          ],
+          locale,
+        )}
+      />
       {heroSrc && (
         <div className="relative h-56 w-full sm:h-80">
           <Image

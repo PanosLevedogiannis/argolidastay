@@ -11,7 +11,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: locale === 'en' ? 'Terms of use' : 'Όροι χρήσης',
     alternates: pageAlternates('/oroi-chrisis', locale),
-    robots: { index: false },
   }
 }
 

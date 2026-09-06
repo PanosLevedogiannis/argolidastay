@@ -125,6 +125,29 @@ export function articleJsonLd(a: {
   }
 }
 
+/**
+ * Διαδρομή πλοήγησης για το Google.
+ *
+ * Με αυτό, τα αποτελέσματα αναζήτησης δείχνουν «argolidastay.gr › Καταλύματα
+ * › Τολό» αντί για γυμνή διεύθυνση. Καταλαβαίνει επίσης τη δομή του
+ * καταλόγου, που βοηθά στην κατάταξη των σελίδων περιοχών.
+ */
+export function breadcrumbJsonLd(
+  items: Array<{ name: string; path: string }>,
+  locale: Locale,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE_URL}${href(locale, item.path)}`,
+    })),
+  }
+}
+
 /** Ενσωμάτωση δομημένων δεδομένων στη σελίδα. */
 export function JsonLd({ data }: { data: object }) {
   return (

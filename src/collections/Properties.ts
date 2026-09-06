@@ -23,7 +23,7 @@ export const Properties: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'area', 'enquiryCount', 'subscriptionUntil', '_status'],
+    defaultColumns: ['name', 'area', 'enquiryCount', 'subscriptionStatus', '_status'],
     group: 'Κατάλογος',
     description: 'Τα καταλύματα που εμφανίζονται στον κατάλογο. Χρησιμοποίησε "Αποθήκευση ως πρόχειρο" όσο δουλεύεις μια καταχώρηση και "Δημοσίευση" όταν είναι έτοιμη.',
   },
@@ -105,6 +105,39 @@ export const Properties: CollectionConfig = {
             } catch {
               return undefined
             }
+          },
+        ],
+      },
+    },
+    {
+      /**
+       * Κατάσταση συνδρομής σε λέξεις.
+       *
+       * Η ημερομηνία λήξης από μόνη της απαιτεί να κάνει κανείς την
+       * αφαίρεση στο μυαλό του για κάθε κατάλυμα. Εδώ φαίνεται αμέσως
+       * ποιες λήγουν — που είναι το πιο άμεσο έσοδο του καταλόγου.
+       */
+      name: 'subscriptionStatus',
+      type: 'text',
+      virtual: true,
+      label: 'Κατάσταση συνδρομής',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+      hooks: {
+        afterRead: [
+          ({ req, data }) => {
+            if (!req.user) return undefined
+            if (!data?.subscriptionUntil) return 'Χωρίς λήξη'
+
+            const until = new Date(data.subscriptionUntil)
+            const days = Math.ceil((until.getTime() - Date.now()) / 86_400_000)
+
+            if (days < 0) return `Έληξε πριν ${Math.abs(days)} ημέρες`
+            if (days === 0) return 'Λήγει σήμερα'
+            if (days <= 30) return `Λήγει σε ${days} ημέρες`
+            return `Ενεργή — ${until.toLocaleDateString('el-GR')}`
           },
         ],
       },
