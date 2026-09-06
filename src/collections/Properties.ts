@@ -274,14 +274,21 @@ export const Properties: CollectionConfig = {
                 {
                   name: 'latitude',
                   type: 'number',
-                  label: 'Γεωγρ. πλάτος',
-                  admin: { width: '50%' },
+                  label: 'Συντεταγμένη 1 (πλάτος)',
+                  admin: {
+                    width: '50%',
+                    description:
+                      'Στο Google Maps: δεξί κλικ στο σημείο → εμφανίζονται δύο αριθμοί. Ο ΠΡΩΤΟΣ μπαίνει εδώ (π.χ. 37.5675).',
+                  },
                 },
                 {
                   name: 'longitude',
                   type: 'number',
-                  label: 'Γεωγρ. μήκος',
-                  admin: { width: '50%' },
+                  label: 'Συντεταγμένη 2 (μήκος)',
+                  admin: {
+                    width: '50%',
+                    description: 'Ο ΔΕΥΤΕΡΟΣ αριθμός (π.χ. 22.8003).',
+                  },
                 },
               ],
             },

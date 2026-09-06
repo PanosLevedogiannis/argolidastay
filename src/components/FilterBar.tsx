@@ -118,7 +118,7 @@ export function FilterBar({
           <option value="">{t(locale, 'search.anyGuests')}</option>
           {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
             <option key={n} value={n}>
-              {n}+ {t(locale, 'search.guests')}
+              {n}+ {t(locale, 'search.guestsLower')}
             </option>
           ))}
         </select>

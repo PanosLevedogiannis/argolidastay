@@ -48,7 +48,8 @@ const el: Dict = {
   'search.area': 'Περιοχή',
   'search.allAreas': 'Όλη η Αργολίδα',
   'search.guests': 'Άτομα',
-  'search.anyGuests': 'Οποιαδήποτε',
+  'search.guestsLower': 'άτομα',
+  'search.anyGuests': 'Όλα',
   'search.type': 'Τύπος',
   'search.anyType': 'Κάθε τύπος',
   'search.submit': 'Αναζήτηση',
@@ -82,7 +83,7 @@ const el: Dict = {
   'home.how2': 'Επικοινώνησε',
   'home.how2d': 'Δες το τηλέφωνο του ιδιοκτήτη ή άφησε το δικό σου για να σε καλέσει εκείνος.',
   'home.how3': 'Κλείσε απευθείας',
-  'home.how3d': 'Συμφωνείτε τιμή και ημερομηνίες μεταξύ σας. Το site δεν παίρνει προμήθεια.',
+  'home.how3d': 'Συμφωνείς τιμή και ημερομηνίες απευθείας μαζί του. Το site δεν παίρνει προμήθεια.',
   'home.ownerCta': 'Έχεις κατάλυμα στην Αργολίδα;',
   'home.ownerCtaSub':
     'Καταχώρησέ το και δέξου τηλεφωνήματα απευθείας από τους επισκέπτες. Χωρίς προμήθεια ανά κράτηση.',
@@ -103,7 +104,7 @@ const el: Dict = {
   'areas.subtitle':
     'Από το Ναύπλιο και την Επίδαυρο μέχρι το Πόρτο Χέλι — διάλεξε πού θέλεις να μείνεις.',
   'areas.empty': 'Χωρίς καταχωρήσεις ακόμα',
-  'areas.seeAllIn': 'Δες και τα {n}',
+  'areas.seeAllIn': 'Δες και τα {n} καταλύματα',
   'areas.guidesFor': 'Οδηγοί για {name}',
   'areas.noneHere': 'Δεν υπάρχουν καταχωρήσεις ακόμα σε αυτή την περιοχή.',
 
@@ -129,15 +130,16 @@ const el: Dict = {
   'prop.bathrooms': 'μπάνια',
   'prop.sqm': 'τ.μ.',
   'prop.inArea': 'στην περιοχή',
+  'prop.mapNote': 'Η θέση είναι ενδεικτική.',
   'prop.nearby': 'Άλλα καταλύματα στην περιοχή',
 
-  'contact.askPrice': 'Επικοινωνήστε για τιμές',
+  'contact.askPrice': 'Ρώτησε για τιμή',
   'contact.priceNote': 'ενδεικτικά, ανά διανυκτέρευση',
   'contact.showPhone': 'Δες τηλέφωνο',
   'contact.loading': 'Φόρτωση…',
   'contact.or': 'ή',
   'contact.callMe': 'Να με καλέσουν',
-  'contact.phoneOf': 'Επικοινωνία',
+  'contact.phoneOf': 'Τηλέφωνο',
   'contact.phone': 'Τηλέφωνο επικοινωνίας',
   'contact.viber': 'Μήνυμα στο Viber',
   'contact.yourName': 'Το όνομά σου',
@@ -153,7 +155,7 @@ const el: Dict = {
   'contact.error': 'Κάτι πήγε στραβά. Δοκίμασε ξανά.',
 
   'footer.tagline':
-    'Καταλύματα στην Αργολίδα. Επικοινωνείτε απευθείας με τον ιδιοκτήτη — χωρίς μεσάζοντες και χωρίς προμήθειες.',
+    'Καταλύματα στην Αργολίδα. Επικοινωνείς απευθείας με τον ιδιοκτήτη — χωρίς μεσάζοντες και χωρίς προμήθειες.',
   'footer.browse': 'Περιήγηση',
   'footer.allProperties': 'Όλα τα καταλύματα',
   'footer.forOwners': 'Για ιδιοκτήτες',
@@ -175,6 +177,7 @@ const en: Dict = {
   'search.allAreas': 'All of Argolida',
   'search.guests': 'Guests',
   'search.anyGuests': 'Any',
+  'search.guestsLower': 'guests',
   'search.type': 'Type',
   'search.anyType': 'Any type',
   'search.submit': 'Search',
@@ -228,7 +231,7 @@ const en: Dict = {
   'areas.subtitle':
     'From Nafplio and Epidavros to Porto Cheli — choose where you want to stay.',
   'areas.empty': 'No listings yet',
-  'areas.seeAllIn': 'See all {n}',
+  'areas.seeAllIn': 'See all {n} properties',
   'areas.guidesFor': 'Guides for {name}',
   'areas.noneHere': 'No listings in this area yet.',
 
@@ -254,6 +257,7 @@ const en: Dict = {
   'prop.bathrooms': 'bathrooms',
   'prop.sqm': 'm²',
   'prop.inArea': 'in',
+  'prop.mapNote': 'Location is approximate.',
   'prop.nearby': 'More places to stay in',
 
   'contact.askPrice': 'Contact for prices',
@@ -262,7 +266,7 @@ const en: Dict = {
   'contact.loading': 'Loading…',
   'contact.or': 'or',
   'contact.callMe': 'Ask them to call me',
-  'contact.phoneOf': 'Contact',
+  'contact.phoneOf': 'Phone',
   'contact.phone': 'Phone number',
   'contact.viber': 'Message on Viber',
   'contact.yourName': 'Your name',
